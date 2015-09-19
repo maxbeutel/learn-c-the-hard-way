@@ -1,0 +1,16 @@
+This repository contains my attempts at solving the exercises from the e-book
+
+Learn C the hard way - by Zed Shaw
+http://c.learncodethehardway.org/book/
+
+The code samples might not contian solutions to all exercises nor do I claim that they are a perfect solution.
+
+I also differed on some ways from the original examples in the book, in so far as:
+
+- using clang as compiler
+- compile with warnings as errors, pedantic and warnings extra
+- compile using c11 as standard
+
+Work in progress.
+
+Some code might be taken verbatim from the book and is therefore (c) by Zed Shaw where applicable.
