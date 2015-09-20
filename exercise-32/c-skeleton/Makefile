@@ -1,5 +1,5 @@
 #CFLAGS = -Werror -std=c11 -pedantic -ggdb3  -Wall -Wextra -g3
-CC = clang-3.5
+CC = clang
 SHELL = /bin/bash
 
 CFLAGS = -std=c11 -DNDEBUG -O2 -pedantic -Werror -Wall -Wextra -Isrc  $(OPTFLAGS)
