@@ -1,3 +1,4 @@
+#include <string.h>
 #include <stdlib.h>
 #include <assert.h>
 
@@ -32,21 +33,40 @@ void DArray_destroy(DArray *array)
     if (array) {
         free(array->contents);
     }
-    
+
     free(array);
 }
 
-int DArray_expand(DArray *array) 
+static inline int DArray_resize(DArray *array, size_t resize_by)
 {
-    UNUSED(array);
-    
+    assert(array != NULL);
+    assert(new_length > 0 && "New array length must be larger then 0.");
+
+    size_t new_length = array->length + resize_by;
+    array->contents = realloc(array->contents, sizeof(void *) * (new_length));
+    // why is this not void **contents as in the struct?!
+    // @TODO error checking for realloc()
+    memset(array->contents + array->length, 0, sizeof(void *) * resize_by);
+    // @TODO check return value of memset
+
+    array->length = new_length;
+
+    return 1;
+}
+
+int DArray_expand(DArray *array)
+{
+    assert(array != NULL);
+
+    DArray_resize(array, DEFAULT_EXPAND_RATE);
+
     return -1;
 }
 
 int DArray_contract(DArray *array)
 {
     UNUSED(array);
-    
+
     return -1;
 }
 
@@ -67,6 +87,6 @@ void *DArray_pop(DArray *array)
     assert(array != NULL);
 
     void *value = array->contents[(array->length - 1)];
-    
+
     return value;
 }
