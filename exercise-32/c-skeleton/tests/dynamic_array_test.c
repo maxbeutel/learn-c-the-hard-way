@@ -18,7 +18,6 @@ char *test_create()
     DArray *array = DArray_create(sizeof(intptr_t), 100);
     assert(array != NULL && "DArray_create failed.");
     assert(array->length == 100 && "length does not match.");
-    assert(array->elements_added == 0 && "initial elements_added must be 0.");
     assert(array->element_size == sizeof(intptr_t) && "element_size does not match.");
     assert(array->expand_rate == DEFAULT_EXPAND_RATE && "element expand rate must be set to DEFAULT_EXPAND_RATE.");
     assert(array->contents != NULL && "contents must not be NULL DArray.");
@@ -112,15 +111,15 @@ char *test_remove()
 
 char *test_expand_setUndefinedIndexExpandsArray()
 {
-    int initial_size = 2;
-    DArray *array = DArray_create(sizeof(intptr_t), initial_size);
+    int initial_length = 2;
+    DArray *array = DArray_create(sizeof(intptr_t), initial_length);
 
     DArray_set(array, 0, (void *) (intptr_t) 9789);
     DArray_set(array, 1, (void *) (intptr_t) 747);
-    assert(array->length == initial_size && "Unexpected array length - must match initial length given.");
+    assert(array->length == initial_length && "Unexpected array length - must match initial length given.");
 
     DArray_set(array, 2, (void *) (intptr_t) 8776);
-    assert(array->length == (initial_size + DEFAULT_EXPAND_RATE) && "Unexpected array length - expected length to increase by DEFAULT_EXPAND_RATE.");
+    assert(array->length == (initial_length + DEFAULT_EXPAND_RATE) && "Unexpected array length - expected length to increase by DEFAULT_EXPAND_RATE.");
 
     intptr_t value = (intptr_t) DArray_get(array, 0);
     assert(value == 9789 && "Did not get expected value at index 0.");
@@ -131,10 +130,51 @@ char *test_expand_setUndefinedIndexExpandsArray()
     value = (intptr_t) DArray_get(array, 2);
     assert(value == 8776 && "Did not get expected value at index 2.");
 
-    for (int i = initial_size + 1 /* index 0 1 2 are set, all others should be NULL */; i < 2 + DEFAULT_EXPAND_RATE; i++) {
+    for (int i = initial_length + 1 /* index 0 1 2 are set, all others should be NULL */; i < 2 + DEFAULT_EXPAND_RATE; i++) {
         void *null_value = DArray_get(array, i);
         assert(null_value == NULL && "Expected remaining indexes to be NULL");
     }
+
+    DArray_destroy(array);
+
+    return NULL;
+}
+
+char *test_contract()
+{
+    int initial_length = 2;
+    DArray *array = DArray_create(sizeof(intptr_t), initial_length);
+
+    DArray_set(array, 0, (void *) (intptr_t) 1);
+    DArray_set(array, 1, (void *) (intptr_t) 2);
+
+    // start expanding, first time
+    DArray_set(array, 2, (void *) (intptr_t) 3);
+    DArray_set(array, 3, (void *) (intptr_t) 4);
+    DArray_set(array, 4, (void *) (intptr_t) 5);
+    DArray_set(array, 5, (void *) (intptr_t) 6);
+    DArray_set(array, 6, (void *) (intptr_t) 7);
+    DArray_set(array, 7, (void *) (intptr_t) 8);
+    DArray_set(array, 8, (void *) (intptr_t) 9);
+    DArray_set(array, 9, (void *) (intptr_t) 10);
+    DArray_set(array, 10, (void *) (intptr_t) 11);
+    DArray_set(array, 11, (void *) (intptr_t) 12);
+
+    assert(array->length == 12 && "Unexpected array length - expected initial size + one time expansion.");
+
+    // start expanding, second time
+    DArray_set(array, 12, (void *) (intptr_t) 13);
+    DArray_set(array, 13, (void *) (intptr_t) 14);
+    DArray_set(array, 14, (void *) (intptr_t) 15);
+    DArray_set(array, 15, (void *) (intptr_t) 16);
+    DArray_set(array, 16, (void *) (intptr_t) 17);
+    DArray_set(array, 17, (void *) (intptr_t) 18);
+    DArray_set(array, 18, (void *) (intptr_t) 19);
+    DArray_set(array, 19, (void *) (intptr_t) 20);
+    DArray_set(array, 20, (void *) (intptr_t) 21);
+    DArray_set(array, 21, (void *) (intptr_t) 22);
+
+    assert(array->length == 22 && "Unexpected array length - expected initial size + one time expansion.");
 
     DArray_destroy(array);
 
@@ -177,9 +217,8 @@ char *all_tests() {
     mu_run_test(test_get_set_undefinedIndex);
     mu_run_test(test_expand_setUndefinedIndexExpandsArray);
     mu_run_test(test_remove);
-    //mu_run_test(test_expand_contract);
+    mu_run_test(test_contract);
     //mu_run_test(test_push_pop);
-    //mu_run_test(test_destroy);
 
     return NULL;
 }
