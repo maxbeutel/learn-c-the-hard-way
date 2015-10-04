@@ -2,78 +2,88 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <limits.h>
 
-// debug:
-#include <stdio.h>
+#include "dynamic_array.h"
 
-#include "liblcthw/dynamic_array.h"
-
-// debug, in order to avoid compiler warnings for not yet implemented functions
-#define UNUSED(x) (void)(x)
-
-static inline int DArray_resize(DArray *array, int resize_by)
+// @TODO this function should have better error handling instead of failing when assert goes wrong
+static void DArray_resize(DArray *array, int new_capacity)
 {
     assert(array != NULL);
-    assert(new_length > 0 && "New array length must be larger then 0.");
+    assert(new_capacity > 0 && "New array capacity must be larger then 0.");
+    assert(new_capacity != array->capacity && "Cowardly refusing to resize array to existing capacity.");
 
-    size_t new_length = array->length + resize_by;
-    array->contents = realloc(array->contents, sizeof(void *) * (new_length));
-    // why is this not void **contents as in the struct?!
-    // @TODO error checking for realloc()
-    memset(array->contents + array->length, 0, sizeof(void *) * resize_by);
-    // @TODO check return value of memset
+    array->contents = realloc(array->contents, sizeof(void *) * new_capacity);
+    assert(array->contents != NULL);
 
-    array->length = new_length;
+    array->dirty_indexes = realloc(array->dirty_indexes, sizeof(int) * new_capacity);
+    assert(array->dirty_indexes != NULL);
 
-    return 1;
+    int old_capacity = array->capacity;
+
+    // on when expanding - nullify all new allocated memory from current head onwards
+    // when contracting, this is not necessary
+    if (new_capacity > old_capacity) {
+        int capacity_increase = new_capacity - old_capacity;
+        void *new_memory_start = NULL;
+
+        new_memory_start = array->contents + old_capacity;
+        memset(new_memory_start, 0, sizeof(void *) * capacity_increase);
+
+        new_memory_start = array->dirty_indexes + old_capacity;
+        memset(new_memory_start, 0, sizeof(int) * capacity_increase);
+        // @TODO check return value of memset
+    }
+
+    array->capacity = new_capacity;
 }
 
-static inline bool DArray_canContract(DArray *array, int contract_by)
+static int DArray_canContract(DArray *array)
 {
-    assert(array != NUL);
+    assert(array != NULL);
 
-    int null_elements_at_head = 0;
+    if (array->size == 0) {
+        return false;
+    }
 
-    for (size_t i = array->length - 1; i >= 0; i--) {
-        if (array->contents[i] == NULL) {
-            null_elements_at_head++;
-        }
+    if (array->capacity <= array->expand_rate) {
+        return false;
+    }
 
-        // contract_by elements at the head of the array are NULL
-        // now we can contract by contract_by
-        if (null_elements_at_head == contract_by) {
-            return true;
-        }
+    int clean_elements_at_head = 0;
 
-        // if we already checked more then contract_by
-        // and didn't exit yet, we can assume not enogh NULL elements exist at head of list
-        if (i < array->length - contract_by) {
+    for (int i = array->capacity - 1; i >= 0; i--) {
+        if (array->dirty_indexes[i]) {
             return false;
+        } else {
+            clean_elements_at_head++;
+        }
+
+        if (clean_elements_at_head == array->expand_rate) {
+            return true;
         }
     }
 
     return false;
 }
 
-static inline int DArray_contract(DArray *array, int contract_by)
+
+DArray *DArray_create(size_t element_size, int initial_capacity)
 {
-    UNUSED(array);
-    UNUSED(contract_by);
-
-    return -1;
-}
-
-
-DArray *DArray_create(size_t element_size, int length)
-{
-    assert(length > 0 && "You must set a length > 0.");
+    assert(element_size > 0 && "You must provide an element size > 0.");
+    assert(initial_capacity > 0 && "You must set a initial_capacity > 0.");
 
     DArray *array = malloc(sizeof(DArray));
     assert(array != NULL);
-    array->length = length;
 
-    array->contents = calloc(length, sizeof(void *));
-    assert(array->contents != NULL); // @FIXME goto und free(array)
+    array->size = 0;
+    array->capacity = initial_capacity;
+
+    array->contents = calloc(initial_capacity, sizeof(void *));
+    assert(array->contents != NULL); // @TODO error handling goto und free(array)
+
+    array->dirty_indexes = calloc(initial_capacity, sizeof(int));
+    assert(array->dirty_indexes != NULL);  // @TODO error handling goto und free(array)
 
     array->element_size = element_size;
     array->expand_rate = DEFAULT_EXPAND_RATE;
@@ -85,6 +95,7 @@ void DArray_destroy(DArray *array)
 {
     if (array) {
         free(array->contents);
+        free(array->dirty_indexes);
     }
 
     free(array);
@@ -92,7 +103,9 @@ void DArray_destroy(DArray *array)
 
 void *DArray_get(DArray *array, int index)
 {
-    assert(index < array->length && "DArray attempt to get undefined index.");
+    assert(array != NULL);
+    assert(index >= 0 && "DArray attempt to get negative index");
+    assert(index < array->capacity && "DArray attempt to get undefined index.");
 
     return array->contents[index];
 }
@@ -102,45 +115,74 @@ void DArray_set(DArray *array, int index, void *el)
     assert(array != NULL);
     assert(index >= 0 && "DArray attempt to get negative index");
 
-    if (index >= array->length) {
-        DArray_resize(array, DEFAULT_EXPAND_RATE);
+    if (index >= array->capacity) {
+        DArray_resize(array, array->capacity + array->expand_rate);
     }
 
-    assert(index < array->length && "DArray attempt to set undefined index.");
-
+    array->size++;
     array->contents[index] = el;
+    array->dirty_indexes[index] = 1;
 }
 
-// @FIXME why does this not expand?
-int DArray_push(DArray *array, void *el)
+void DArray_push(DArray *array, void *el)
 {
     assert(array != NULL);
+    assert(array->size < INT_MAX - 1 && "Maximum array capacity of INT_MAX reached.");
 
-    array->contents[array->length] = el;
+    if (array->size == 0) {
+        DArray_set(array, 0, el);
+        return;
+    }
 
-    return 0; // does a return value make sense here?
+    for (int i = array->capacity - 1; i >= 0; i--) {
+        if (array->dirty_indexes[i]) {
+            DArray_set(array, i + 1, el);
+            break;
+        }
+    }
 }
 
-// @FIXME this must then resize (contract) ?
 void *DArray_pop(DArray *array)
 {
     assert(array != NULL);
 
-    void *value = array->contents[(array->length - 1)];
+    if (array->size == 0) {
+        return NULL;
+    }
 
-    return value;
+    for (int i = array->capacity - 1; i >= 0; i--) {
+        if (array->dirty_indexes[i]) {
+            void *el = DArray_get(array, i);
+            DArray_remove(array, i);
+
+            return el;
+        }
+    }
+
+    return NULL;
 }
 
 void *DArray_remove(DArray *array, int index)
 {
     assert(array != NULL);
-    assert(index < array->length && "DArray attempt to remove undefined index.");
+    assert(index >= 0 && "DArray attempt to get negative index");
+    assert(index < array->capacity && "DArray attempt to remove undefined index.");
+
+    if (array->size == 0) {
+        return NULL;
+    }
+
+    if (!array->dirty_indexes[index]) {
+        return NULL;
+    }
 
     void *el = array->contents[index];
+    array->size--;
     array->contents[index] = NULL;
+    array->dirty_indexes[index] = 0;
 
-    if (DArray_canContract(array, DEFAULT_EXPAND_RATE)) {
-        DArray_contract(array, DEFAULT_EXPAND_RATE);
+    if (DArray_canContract(array)) {
+        DArray_resize(array, array->capacity - array->expand_rate);
     }
 
     return el;
