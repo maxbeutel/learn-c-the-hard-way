@@ -6,18 +6,21 @@
 
 #include "dynamic_array.h"
 
-// @TODO this function should have better error handling instead of failing when assert goes wrong
-static void DArray_resize(DArray *array, int new_capacity)
+static int DArray_resize(DArray *array, int new_capacity)
 {
     assert(array != NULL);
     assert(new_capacity > 0 && "New array capacity must be larger then 0.");
     assert(new_capacity != array->capacity && "Cowardly refusing to resize array to existing capacity.");
 
     array->contents = realloc(array->contents, sizeof(void *) * new_capacity);
-    assert(array->contents != NULL);
+    if (!array->contents) {
+        goto error;
+    }
 
     array->dirty_indexes = realloc(array->dirty_indexes, sizeof(int) * new_capacity);
-    assert(array->dirty_indexes != NULL);
+    if (!array->dirty_indexes) {
+        goto error;
+    }
 
     int old_capacity = array->capacity;
 
@@ -32,10 +35,17 @@ static void DArray_resize(DArray *array, int new_capacity)
 
         new_memory_start = array->dirty_indexes + old_capacity;
         memset(new_memory_start, 0, sizeof(int) * capacity_increase);
-        // @TODO check return value of memset
     }
 
     array->capacity = new_capacity;
+
+    return 0;
+
+error:
+    free(array->contents);
+    free(array->dirty_indexes);
+
+    return -1;
 }
 
 static int DArray_canContract(DArray *array)
@@ -74,21 +84,37 @@ DArray *DArray_create(size_t element_size, int initial_capacity)
     assert(initial_capacity > 0 && "You must set a initial_capacity > 0.");
 
     DArray *array = malloc(sizeof(DArray));
-    assert(array != NULL);
+    if (!array) {
+        goto error;
+    }
 
     array->size = 0;
     array->capacity = initial_capacity;
 
     array->contents = calloc(initial_capacity, sizeof(void *));
-    assert(array->contents != NULL); // @TODO error handling goto und free(array)
+    if (!array->contents) {
+        goto error;
+    }
 
     array->dirty_indexes = calloc(initial_capacity, sizeof(int));
-    assert(array->dirty_indexes != NULL);  // @TODO error handling goto und free(array)
+    if (!array->dirty_indexes) {
+        goto error;
+    }
 
     array->element_size = element_size;
     array->expand_rate = DEFAULT_EXPAND_RATE;
 
     return array;
+
+error:
+    free(array);
+
+    if (array) {
+        free(array->contents);
+        free(array->dirty_indexes);
+    }
+
+    return NULL;
 }
 
 void DArray_destroy(DArray *array)
@@ -116,7 +142,7 @@ void DArray_set(DArray *array, int index, void *el)
     assert(index >= 0 && "DArray attempt to get negative index");
 
     if (index >= array->capacity) {
-        DArray_resize(array, array->capacity + array->expand_rate);
+        assert(DArray_resize(array, array->capacity + array->expand_rate) == 0);
     }
 
     array->size++;
@@ -182,7 +208,7 @@ void *DArray_remove(DArray *array, int index)
     array->dirty_indexes[index] = 0;
 
     if (DArray_canContract(array)) {
-        DArray_resize(array, array->capacity - array->expand_rate);
+        assert(DArray_resize(array, array->capacity - array->expand_rate) == 0);
     }
 
     return el;
