@@ -30,7 +30,7 @@ build:
 
 
 .PHONY: dev
-dev: CFLAGS += -g3 -ggdb
+dev: CFLAGS += -g3 -ggdb -O0
 dev: clean all tests
 
 # The Unit Tests
