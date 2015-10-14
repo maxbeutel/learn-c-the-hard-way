@@ -95,7 +95,7 @@ RMElement *RadixMap_find(RadixMap *map, uint32_t to_find)
         if (to_find < key) {
             high = middle -1;
         } else if (to_find > key) {
-            high = middle + 1;
+            low = middle + 1;
         } else {
             return &data[middle];
         }

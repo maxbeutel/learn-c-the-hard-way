@@ -39,12 +39,33 @@ static int check_order(RadixMap *map)
     return 1;
 }
 
+char *test_find()
+{
+    RadixMap *map = RadixMap_create(10);
+
+    RadixMap_add(map, 1, 1);
+    RadixMap_add(map, 2, 2);
+    RadixMap_add(map, 3, 3);
+    RadixMap_add(map, 4, 4);
+    RadixMap_add(map, 5, 5);
+    RadixMap_add(map, 6, 6);
+    RadixMap_add(map, 7, 7);
+    RadixMap_add(map, 8, 8);
+    RadixMap_add(map, 9, 9);
+
+    assert(RadixMap_find(map, 7) != NULL);
+
+    RadixMap_destroy(map);
+
+    return NULL;
+}
+
 static void test_search(RadixMap *map)
 {
     RMElement *d = NULL;
     RMElement *found = NULL;
 
-    for (unsigned int i = map->end / 2; i < map->end; i++) {
+    for (unsigned i = map->end / 2; i < map->end; i++) {
         d = &map->contents[i];
         found = RadixMap_find(map, d->data.key);
 
@@ -88,6 +109,7 @@ char *all_tests()
 
     mu_suite_start();
 
+    mu_run_test(test_find);
     mu_run_test(test_operations);
 
     return NULL;
