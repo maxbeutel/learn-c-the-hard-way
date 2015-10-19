@@ -21,9 +21,9 @@ DArray *DArray_create(size_t element_size, int initial_capacity);
 void DArray_destroy(DArray *array);
 
 void *DArray_get(DArray *array, int index);
-void DArray_set(DArray *array, int index, void *el);
+void DArray_set(DArray *array, int index, void *element);
 
-void DArray_push(DArray *array, void *el);
+void DArray_push(DArray *array, void *element);
 void *DArray_pop(DArray *array);
 
 void *DArray_remove(DArray *array, int index);

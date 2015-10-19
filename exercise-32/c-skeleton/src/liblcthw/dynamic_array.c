@@ -136,7 +136,7 @@ void *DArray_get(DArray *array, int index)
     return array->contents[index];
 }
 
-void DArray_set(DArray *array, int index, void *el)
+void DArray_set(DArray *array, int index, void *element)
 {
     assert(array != NULL);
     assert(index >= 0 && "DArray attempt to get negative index");
@@ -146,23 +146,23 @@ void DArray_set(DArray *array, int index, void *el)
     }
 
     array->size++;
-    array->contents[index] = el;
+    array->contents[index] = element;
     array->dirty_indexes[index] = 1;
 }
 
-void DArray_push(DArray *array, void *el)
+void DArray_push(DArray *array, void *element)
 {
     assert(array != NULL);
     assert(array->size < INT_MAX - 1 && "Maximum array capacity of INT_MAX reached.");
 
     if (array->size == 0) {
-        DArray_set(array, 0, el);
+        DArray_set(array, 0, element);
         return;
     }
 
     for (int i = array->capacity - 1; i >= 0; i--) {
         if (array->dirty_indexes[i]) {
-            DArray_set(array, i + 1, el);
+            DArray_set(array, i + 1, element);
             break;
         }
     }
@@ -178,10 +178,10 @@ void *DArray_pop(DArray *array)
 
     for (int i = array->capacity - 1; i >= 0; i--) {
         if (array->dirty_indexes[i]) {
-            void *el = DArray_get(array, i);
+            void *element = DArray_get(array, i);
             DArray_remove(array, i);
 
-            return el;
+            return element;
         }
     }
 
@@ -202,7 +202,7 @@ void *DArray_remove(DArray *array, int index)
         return NULL;
     }
 
-    void *el = array->contents[index];
+    void *element = array->contents[index];
     array->size--;
     array->contents[index] = NULL;
     array->dirty_indexes[index] = 0;
@@ -211,7 +211,7 @@ void *DArray_remove(DArray *array, int index)
         assert(DArray_resize(array, array->capacity - array->expand_rate) == 0);
     }
 
-    return el;
+    return element;
 }
 
 int DArray_contains(DArray *array, void *search_element, DArray_predicate predicate)
@@ -221,9 +221,9 @@ int DArray_contains(DArray *array, void *search_element, DArray_predicate predic
 
     for (int i = 0; i < array->capacity; i++) {
         if (array->dirty_indexes[i]) {
-            void *el = DArray_get(array, i);
+            void *element = DArray_get(array, i);
 
-            if (predicate(search_element, el, i) == 1) {
+            if (predicate(search_element, element, i) == 1) {
                 return 1;
             }
         }
