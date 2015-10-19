@@ -231,3 +231,31 @@ int DArray_contains(DArray *array, void *search_element, DArray_predicate predic
 
     return 0;
 }
+
+DArray_iterator_state DArray_iterator_next(DArray *array, DArray_iterator *iterator)
+{
+    assert(array != NULL);
+    assert(iterator != NULL);
+
+    if (*iterator == DARRAY_ITERATOR_EMPTY) {
+        for (int i = 0; i < array->capacity; i++) {
+            if (array->dirty_indexes[i]) {
+                *iterator = i;
+                return i;
+            }
+        }
+
+        return -1;
+    } else {
+        assert(*iterator >= 0);
+    }
+
+    for (int i = *iterator; i < array->capacity; i++) {
+        if (array->dirty_indexes[i]) {
+            *iterator = i + 1;
+            return i;
+        }
+    }
+
+    return DARRAY_ITERATOR_END;
+}

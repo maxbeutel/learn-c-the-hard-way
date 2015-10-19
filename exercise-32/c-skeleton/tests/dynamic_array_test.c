@@ -246,6 +246,83 @@ char *test_contains()
     return NULL;
 }
 
+char *test_iteration_arrayContainingContinousElements()
+{
+    DArray *array = DArray_create(sizeof(intptr_t), 3);
+
+    DArray_push(array, (void *) (intptr_t) 60);
+    DArray_push(array, (void *) (intptr_t) 670);
+    DArray_push(array, (void *) (intptr_t) 90);
+
+    intptr_t collected_elements[3] = {0};
+
+    DArray_iterator iterator = DARRAY_ITERATOR_EMPTY;
+    int index = 0;
+
+    while ((index = DArray_iterator_next(array, &iterator)) != DARRAY_ITERATOR_END) {
+        intptr_t element = (intptr_t) DArray_get(array, index);
+
+        collected_elements[index] = element;
+    }
+
+    assert(collected_elements[0] == 60 && "Expected value at index not found.");
+    assert(collected_elements[1] == 670 && "Expected value at index not found.");
+    assert(collected_elements[2] == 90 && "Expected value at index not found.");
+
+    return NULL;
+}
+
+char *test_iteration_arrayContainingHoles_1()
+{
+    DArray *array = DArray_create(sizeof(intptr_t), 3);
+
+    DArray_set(array, 0, (void *) (intptr_t) 10);
+    DArray_set(array, 2, (void *) (intptr_t) 30);
+
+    intptr_t collected_elements[3] = {0};
+
+    DArray_iterator iterator = DARRAY_ITERATOR_EMPTY;
+    int index = 0;
+
+    while ((index = DArray_iterator_next(array, &iterator)) != DARRAY_ITERATOR_END) {
+        intptr_t element = (intptr_t) DArray_get(array, index);
+
+        collected_elements[index] = element;
+    }
+
+    assert(collected_elements[0] == 10 && "Expected value at index not found.");
+    assert(collected_elements[2] == 30 && "Expected value at index not found.");
+
+    return NULL;
+}
+
+char *test_iteration_arrayContainingHoles_2()
+{
+    DArray *array = DArray_create(sizeof(intptr_t), 3);
+
+    DArray_set(array, 0, (void *) (intptr_t) 10);
+    DArray_set(array, 1, (void *) (intptr_t) 20);
+    DArray_set(array, 2, (void *) (intptr_t) 30);
+
+    DArray_remove(array, 0);
+
+    intptr_t collected_elements[3] = {0};
+
+    DArray_iterator iterator = DARRAY_ITERATOR_EMPTY;
+    int index = 0;
+
+    while ((index = DArray_iterator_next(array, &iterator)) != DARRAY_ITERATOR_END) {
+        intptr_t element = (intptr_t) DArray_get(array, index);
+
+        collected_elements[index] = element;
+    }
+
+    assert(collected_elements[1] == 20 && "Expected value at index not found.");
+    assert(collected_elements[2] == 30 && "Expected value at index not found.");
+
+    return NULL;
+}
+
 char *all_tests() {
     mu_suite_start();
 
@@ -259,6 +336,9 @@ char *all_tests() {
     mu_run_test(test_contract);
     mu_run_test(test_push_pop);
     mu_run_test(test_contains);
+    mu_run_test(test_iteration_arrayContainingContinousElements);
+    mu_run_test(test_iteration_arrayContainingHoles_1);
+    mu_run_test(test_iteration_arrayContainingHoles_2);
 
     return NULL;
 }
