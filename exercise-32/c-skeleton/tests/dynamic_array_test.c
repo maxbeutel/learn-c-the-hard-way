@@ -13,6 +13,8 @@
 #define TEST_STR_2 "welt"
 #define TEST_STR_2_LEN strlen(TEST_STR_2)
 
+#define UNUSED(x) (void)(x)
+
 char *test_create()
 {
     DArray *array = DArray_create(sizeof(intptr_t), 5);
@@ -213,6 +215,37 @@ char *test_contract()
      return NULL;
 }
 
+int _test_predicate(void *search_element, void *current_element, int index)
+{
+    UNUSED(index);
+
+    intptr_t search_element_int = (intptr_t) search_element;
+    intptr_t current_element_int = (intptr_t) current_element;
+
+    if (search_element_int == current_element_int) {
+        return 1;
+    }
+
+    return 0;
+}
+
+char *test_contains()
+{
+    DArray *array = DArray_create(sizeof(intptr_t), 3);
+
+    DArray_push(array, (void *) (intptr_t) 60);
+    DArray_push(array, (void *) (intptr_t) 90);
+
+    assert(DArray_contains(array, (void *) (intptr_t) 90, _test_predicate) == 1 && "Expected to find value in array.");
+    assert(DArray_contains(array, (void *) (intptr_t) 60, _test_predicate) == 1 && "Expected to find value in array.");
+    assert(DArray_contains(array, (void *) (intptr_t) 100, _test_predicate) == 0 && "Expected to not find value in array.");
+    assert(DArray_contains(array, NULL, _test_predicate) == 0 && "Expected to not find value in array.");
+
+    DArray_destroy(array);
+
+    return NULL;
+}
+
 char *all_tests() {
     mu_suite_start();
 
@@ -225,6 +258,7 @@ char *all_tests() {
     mu_run_test(test_remove);
     mu_run_test(test_contract);
     mu_run_test(test_push_pop);
+    mu_run_test(test_contains);
 
     return NULL;
 }

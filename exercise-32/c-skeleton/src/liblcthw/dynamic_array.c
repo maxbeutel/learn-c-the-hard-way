@@ -213,3 +213,21 @@ void *DArray_remove(DArray *array, int index)
 
     return el;
 }
+
+int DArray_contains(DArray *array, void *search_element, DArray_predicate predicate)
+{
+    assert(array != NULL);
+    assert(predicate != NULL);
+
+    for (int i = 0; i < array->capacity; i++) {
+        if (array->dirty_indexes[i]) {
+            void *el = DArray_get(array, i);
+
+            if (predicate(search_element, el, i) == 1) {
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+}

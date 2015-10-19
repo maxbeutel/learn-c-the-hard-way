@@ -7,7 +7,6 @@
 #define DEFAULT_EXPAND_RATE 10
 
 typedef struct DArray {
-    // @FIXME watch int overflows here!
     int size; // logical size, number of elements
     int capacity; // physical size
     int expand_rate;
@@ -15,6 +14,8 @@ typedef struct DArray {
     size_t element_size;
     void **contents;
 } DArray;
+
+typedef int (*DArray_predicate)(void *search_element, void *current_element, int index);
 
 DArray *DArray_create(size_t element_size, int initial_capacity);
 void DArray_destroy(DArray *array);
@@ -26,5 +27,7 @@ void DArray_push(DArray *array, void *el);
 void *DArray_pop(DArray *array);
 
 void *DArray_remove(DArray *array, int index);
+
+int DArray_contains(DArray *array, void *search_element, DArray_predicate predicate);
 
 #endif
