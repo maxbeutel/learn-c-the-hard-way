@@ -37,6 +37,6 @@ void *DArray_remove(DArray *array, int index);
 
 int DArray_contains(DArray *array, void *search_element, DArray_predicate predicate);
 
-DArray_iterator_state DArray_iterator_next(DArray *array, DArray_iterator *iterator);
+int DArray_iterator_next(DArray *array, DArray_iterator *iterator);
 
 #endif

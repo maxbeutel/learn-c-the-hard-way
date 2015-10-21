@@ -232,7 +232,7 @@ int DArray_contains(DArray *array, void *search_element, DArray_predicate predic
     return 0;
 }
 
-DArray_iterator_state DArray_iterator_next(DArray *array, DArray_iterator *iterator)
+int DArray_iterator_next(DArray *array, DArray_iterator *iterator)
 {
     assert(array != NULL);
     assert(iterator != NULL);
