@@ -232,30 +232,70 @@ int DArray_contains(DArray *array, void *search_element, DArray_predicate predic
     return 0;
 }
 
-int DArray_iterator_next(DArray *array, DArray_iterator *iterator)
+int DArray_iterator_next(DArray *array, int *index)
 {
     assert(array != NULL);
-    assert(iterator != NULL);
+    assert(index != NULL);
 
-    if (*iterator == DARRAY_ITERATOR_EMPTY) {
+    if (array->size == 0) {
+        return 0;
+    }
+
+    // initially find first dirty index
+    if (*index == -1) {
         for (int i = 0; i < array->capacity; i++) {
             if (array->dirty_indexes[i]) {
-                *iterator = i;
-                return i;
+                *index = i;
+                return 1;
             }
         }
 
-        return -1;
+        return 0;
     } else {
-        assert(*iterator >= 0);
+        assert(*index >= 0);
+        assert(*index < array->capacity);
     }
 
-    for (int i = *iterator; i < array->capacity; i++) {
+    for (int i = *index + 1; i < array->capacity; i++) {
         if (array->dirty_indexes[i]) {
-            *iterator = i + 1;
-            return i;
+            *index = i;
+            return 1;
         }
     }
 
-    return DARRAY_ITERATOR_END;
+    return 0;
+}
+
+int DArray_iterator_prev(DArray *array, int *index)
+{
+    assert(array != NULL);
+    assert(index != NULL);
+
+    if (array->size == 0) {
+        return 0;
+    }
+
+    // initially find last dirty index
+    if (*index == -1) {
+        for (int i = array->capacity - 1; i >= 0; i--) {
+            if (array->dirty_indexes[i]) {
+                *index = i;
+                return 1;
+            }
+        }
+
+        return 0;
+    } else {
+        assert(*index >= 0);
+        assert(*index < array->capacity);
+    }
+
+    for (int i = *index - 1; i >= 0; i--) {
+        if (array->dirty_indexes[i]) {
+            *index = i;
+            return 1;
+        }
+    }
+
+    return 0;
 }

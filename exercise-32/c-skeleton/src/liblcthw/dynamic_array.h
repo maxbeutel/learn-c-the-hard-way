@@ -17,13 +17,6 @@ typedef struct DArray {
 
 typedef int (*DArray_predicate)(void *search_element, void *current_element, int index);
 
-typedef enum DArray_iterator_state {
-    DARRAY_ITERATOR_EMPTY = -2,
-    DARRAY_ITERATOR_END = -1,
-} DArray_iterator_state;
-
-typedef int DArray_iterator;
-
 DArray *DArray_create(size_t element_size, int initial_capacity);
 void DArray_destroy(DArray *array);
 
@@ -37,6 +30,7 @@ void *DArray_remove(DArray *array, int index);
 
 int DArray_contains(DArray *array, void *search_element, DArray_predicate predicate);
 
-int DArray_iterator_next(DArray *array, DArray_iterator *iterator);
+int DArray_iterator_next(DArray *array, int *index);
+int DArray_iterator_prev(DArray *array, int *index);
 
 #endif

@@ -246,7 +246,7 @@ char *test_contains()
     return NULL;
 }
 
-char *test_iteration_arrayContainingContinousElements()
+char *test_iterationForward_arrayContainingContinousElements()
 {
     DArray *array = DArray_create(sizeof(intptr_t), 3);
 
@@ -254,49 +254,57 @@ char *test_iteration_arrayContainingContinousElements()
     DArray_push(array, (void *) (intptr_t) 670);
     DArray_push(array, (void *) (intptr_t) 90);
 
-    intptr_t collected_elements[3] = {0};
+    int index = -1;
 
-    DArray_iterator iterator = DARRAY_ITERATOR_EMPTY;
-    int index = 0;
+    assert(DArray_iterator_next(array, &index) == 1 && "Expected to continue to next element.");
+    assert(index == 0 && "Expected index was not set by iteration.");
 
-    while ((index = DArray_iterator_next(array, &iterator)) != DARRAY_ITERATOR_END) {
-        intptr_t element = (intptr_t) DArray_get(array, index);
+    assert(DArray_iterator_next(array, &index) == 1 && "Expected to continue to next element.");
+    assert(index == 1 && "Expected index was not set by iteration.");
 
-        collected_elements[index] = element;
-    }
+    assert(DArray_iterator_next(array, &index) == 1 && "Expected to continue to next element.");
+    assert(index == 2 && "Expected index was not set by iteration.");
 
-    assert(collected_elements[0] == 60 && "Expected value at index not found.");
-    assert(collected_elements[1] == 670 && "Expected value at index not found.");
-    assert(collected_elements[2] == 90 && "Expected value at index not found.");
+    assert(DArray_iterator_next(array, &index) == 0 && "Expected to end interation.");
+
+    /* while (DArray_iterator_next(array, &index)) { */
+    /*     intptr_t element = (intptr_t) DArray_get(array, index); */
+
+    /*     collected_elements[index] = element; */
+    /* } */
+
+    /* assert(collected_elements[0] == 60 && "Expected value at index not found."); */
+    /* assert(collected_elements[1] == 670 && "Expected value at index not found."); */
+    /* assert(collected_elements[2] == 90 && "Expected value at index not found."); */
+
+    DArray_destroy(array);
 
     return NULL;
 }
 
-char *test_iteration_arrayContainingHoles_1()
+char *test_iterationForward_arrayContainingHoles_1()
 {
     DArray *array = DArray_create(sizeof(intptr_t), 3);
 
     DArray_set(array, 0, (void *) (intptr_t) 10);
     DArray_set(array, 2, (void *) (intptr_t) 30);
 
-    intptr_t collected_elements[3] = {0};
+    int index = -1;
 
-    DArray_iterator iterator = DARRAY_ITERATOR_EMPTY;
-    int index = 0;
+    assert(DArray_iterator_next(array, &index) == 1 && "Expected to continue to next element.");
+    assert(index == 0 && "Expected index was not set by iteration.");
 
-    while ((index = DArray_iterator_next(array, &iterator)) != DARRAY_ITERATOR_END) {
-        intptr_t element = (intptr_t) DArray_get(array, index);
+    assert(DArray_iterator_next(array, &index) == 1 && "Expected to continue to next element.");
+    assert(index == 2 && "Expected index was not set by iteration.");
 
-        collected_elements[index] = element;
-    }
+    assert(DArray_iterator_next(array, &index) == 0 && "Expected to end interation.");
 
-    assert(collected_elements[0] == 10 && "Expected value at index not found.");
-    assert(collected_elements[2] == 30 && "Expected value at index not found.");
+    DArray_destroy(array);
 
     return NULL;
 }
 
-char *test_iteration_arrayContainingHoles_2()
+char *test_iterationForward_arrayContainingHoles_2()
 {
     DArray *array = DArray_create(sizeof(intptr_t), 3);
 
@@ -306,19 +314,90 @@ char *test_iteration_arrayContainingHoles_2()
 
     DArray_remove(array, 0);
 
-    intptr_t collected_elements[3] = {0};
+    int index = -1;
 
-    DArray_iterator iterator = DARRAY_ITERATOR_EMPTY;
-    int index = 0;
+    assert(DArray_iterator_next(array, &index) == 1 && "Expected to continue to next element.");
+    assert(index == 1 && "Expected index was not set by iteration.");
 
-    while ((index = DArray_iterator_next(array, &iterator)) != DARRAY_ITERATOR_END) {
-        intptr_t element = (intptr_t) DArray_get(array, index);
+    assert(DArray_iterator_next(array, &index) == 1 && "Expected to continue to next element.");
+    assert(index == 2 && "Expected index was not set by iteration.");
 
-        collected_elements[index] = element;
-    }
+    assert(DArray_iterator_next(array, &index) == 0 && "Expected to end interation.");
 
-    assert(collected_elements[1] == 20 && "Expected value at index not found.");
-    assert(collected_elements[2] == 30 && "Expected value at index not found.");
+    DArray_destroy(array);
+
+    return NULL;
+}
+
+char *test_iterationBackward_arrayContainingContinousElements()
+{
+    DArray *array = DArray_create(sizeof(intptr_t), 3);
+
+    DArray_push(array, (void *) (intptr_t) 60);
+    DArray_push(array, (void *) (intptr_t) 670);
+    DArray_push(array, (void *) (intptr_t) 90);
+
+    int index = -1;
+
+    assert(DArray_iterator_prev(array, &index) == 1 && "Expected to continue to prev element.");
+    assert(index == 2 && "Expected index was not set by iteration.");
+
+    assert(DArray_iterator_prev(array, &index) == 1 && "Expected to continue to prev element.");
+    assert(index == 1 && "Expected index was not set by iteration.");
+
+    assert(DArray_iterator_prev(array, &index) == 1 && "Expected to continue to prev element.");
+    assert(index == 0 && "Expected index was not set by iteration.");
+
+    assert(DArray_iterator_prev(array, &index) == 0 && "Expected to end interation.");
+
+    DArray_destroy(array);
+
+    return NULL;
+}
+
+char *test_iterationBackward_arrayContainingHoles_1()
+{
+    DArray *array = DArray_create(sizeof(intptr_t), 3);
+
+    DArray_set(array, 0, (void *) (intptr_t) 10);
+    DArray_set(array, 2, (void *) (intptr_t) 30);
+
+    int index = -1;
+
+    assert(DArray_iterator_prev(array, &index) == 1 && "Expected to continue to prev element.");
+    assert(index == 2 && "Expected index was not set by iteration.");
+
+    assert(DArray_iterator_prev(array, &index) == 1 && "Expected to continue to prev element.");
+    assert(index == 0 && "Expected index was not set by iteration.");
+
+    assert(DArray_iterator_prev(array, &index) == 0 && "Expected to end interation.");
+
+    DArray_destroy(array);
+
+    return NULL;
+}
+
+char *test_iterationBackward_arrayContainingHoles_2()
+{
+    DArray *array = DArray_create(sizeof(intptr_t), 3);
+
+    DArray_set(array, 0, (void *) (intptr_t) 10);
+    DArray_set(array, 1, (void *) (intptr_t) 20);
+    DArray_set(array, 2, (void *) (intptr_t) 30);
+
+    DArray_remove(array, 2);
+
+    int index = -1;
+
+    assert(DArray_iterator_prev(array, &index) == 1 && "Expected to continue to prev element.");
+    assert(index == 1 && "Expected index was not set by iteration.");
+
+    assert(DArray_iterator_prev(array, &index) == 1 && "Expected to continue to prev element.");
+    assert(index == 0 && "Expected index was not set by iteration.");
+
+    assert(DArray_iterator_prev(array, &index) == 0 && "Expected to end interation.");
+
+    DArray_destroy(array);
 
     return NULL;
 }
@@ -336,9 +415,12 @@ char *all_tests() {
     mu_run_test(test_contract);
     mu_run_test(test_push_pop);
     mu_run_test(test_contains);
-    mu_run_test(test_iteration_arrayContainingContinousElements);
-    mu_run_test(test_iteration_arrayContainingHoles_1);
-    mu_run_test(test_iteration_arrayContainingHoles_2);
+    mu_run_test(test_iterationForward_arrayContainingContinousElements);
+    mu_run_test(test_iterationForward_arrayContainingHoles_1);
+    mu_run_test(test_iterationForward_arrayContainingHoles_2);
+    mu_run_test(test_iterationBackward_arrayContainingContinousElements);
+    mu_run_test(test_iterationBackward_arrayContainingHoles_1);
+    mu_run_test(test_iterationBackward_arrayContainingHoles_2);
 
     return NULL;
 }
