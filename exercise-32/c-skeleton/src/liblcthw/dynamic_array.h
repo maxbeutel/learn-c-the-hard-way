@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#define DEFAULT_EXPAND_RATE 10
+#define DARRAY_DEFAULT_EXPAND_RATE 10
 
 typedef struct DArray {
     int size; // logical size, number of elements

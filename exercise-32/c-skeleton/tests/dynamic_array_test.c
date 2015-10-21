@@ -22,7 +22,7 @@ char *test_create()
     assert(array->size == 0 && "Logical size does not match.");
     assert(array->capacity == 5 && "Physical capacity does not match.");
     assert(array->element_size == sizeof(intptr_t) && "element_size does not match.");
-    assert(array->expand_rate == DEFAULT_EXPAND_RATE && "expand_rate must be set to DEFAULT_EXPAND_RATE.");
+    assert(array->expand_rate == DARRAY_DEFAULT_EXPAND_RATE && "expand_rate must be set to DARRAY_DEFAULT_EXPAND_RATE.");
     assert(array->contents != NULL && "contents must not be NULL.");
 
     DArray_destroy(array);
@@ -123,7 +123,7 @@ char *test_expand_setUndefinedIndexExpandsArray()
 
     DArray_set(array, 2, (void *) (intptr_t) 8776);
     assert(array->size == 3 && "Unexpected array size - after adding one more element.");
-    assert(array->capacity == (initial_capacity + DEFAULT_EXPAND_RATE) && "Unexpected array capacity after expanding.");
+    assert(array->capacity == (initial_capacity + DARRAY_DEFAULT_EXPAND_RATE) && "Unexpected array capacity after expanding.");
 
     intptr_t value = (intptr_t) DArray_get(array, 0);
     assert(value == 9789 && "Did not get expected value at index 0.");
@@ -136,7 +136,7 @@ char *test_expand_setUndefinedIndexExpandsArray()
 
     // index 0 1 2 are set, all others should be NULL
     for (int i = initial_capacity + 1;
-         i < initial_capacity + DEFAULT_EXPAND_RATE;
+         i < initial_capacity + DARRAY_DEFAULT_EXPAND_RATE;
          i++) {
         void *null_value = DArray_get(array, i);
 

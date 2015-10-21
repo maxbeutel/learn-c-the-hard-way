@@ -102,7 +102,7 @@ DArray *DArray_create(size_t element_size, int initial_capacity)
     }
 
     array->element_size = element_size;
-    array->expand_rate = DEFAULT_EXPAND_RATE;
+    array->expand_rate = DARRAY_DEFAULT_EXPAND_RATE;
 
     return array;
 
