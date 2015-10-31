@@ -199,7 +199,6 @@ void *Hashmap_delete(Hashmap *map, void *key)
     assert(node != NULL);
 
     void *data = node->data;
-    free(node);
 
     // why is this needed?
     /* HashmapNode *ending = DArray_pop(bucket); */
