@@ -6,24 +6,26 @@
 
 #include "hashmap.h"
 
-static int default_compare(void *a, void *b)
+static int default_compare(void *key_a, void *key_b)
 {
-    return bstrcmp((bstring) a, (bstring) b);
+    return bstrcmp((bstring) key_a, (bstring) key_b);
 }
 
 /**
  * Simple Bob Jenkins's hash algorithm taken from the
  * wikipedia description.
  */
-static uint32_t default_hash(void *a)
+static uint32_t default_hash(void *key)
 {
-    size_t len = blength((bstring) a);
-    char *key = bdata((bstring) a);
+    assert(key != NULL);
+
+    size_t len = blength((bstring) key);
+    char *raw_key = bdata((bstring) key);
 
     uint32_t hash = 0;
 
     for (size_t i = 0; i < len; i++) {
-        hash += key[i];
+        hash += raw_key[i];
         hash += (hash << 10);
         hash ^= (hash >> 6);
     }
@@ -75,6 +77,8 @@ void Hashmap_destroy(Hashmap *map)
 
 static inline HashmapNode *HashmapNode_create(int hash, void *key, void *data)
 {
+    assert(key != NULL);
+
     HashmapNode *node = calloc(1, sizeof(HashmapNode));
     assert(node != NULL);
     // @TODO proper error handling
@@ -88,6 +92,10 @@ static inline HashmapNode *HashmapNode_create(int hash, void *key, void *data)
 
 static inline DArray *Hashmap_find_bucket(Hashmap *map, void *key, int create, uint32_t *hash_out)
 {
+    assert(map != NULL);
+    assert(key != NULL);
+    assert(hash_out != NULL);
+
     uint32_t hash = map->hash(key);
     int bucket_n = hash % DEFAULT_NUMBER_OF_BUCKETS;
     assert(bucket_n >= 0);
@@ -108,6 +116,8 @@ static inline DArray *Hashmap_find_bucket(Hashmap *map, void *key, int create, u
 
 int Hashmap_set(Hashmap *map, void *key, void *data)
 {
+    assert(map != NULL);
+    assert(key != NULL);
     assert(map->size < INT_MAX);
 
     uint32_t hash = 0;
@@ -125,6 +135,10 @@ int Hashmap_set(Hashmap *map, void *key, void *data)
 
 static inline int Hashmap_get_node(Hashmap *map, uint32_t hash, DArray *bucket, void *key)
 {
+    assert(map != NULL);
+    assert(bucket != NULL);
+    assert(key != NULL);
+
     int i = -1;
 
     while (DArray_iterator_next(bucket, &i)) {
@@ -140,6 +154,9 @@ static inline int Hashmap_get_node(Hashmap *map, uint32_t hash, DArray *bucket, 
 
 void *Hashmap_get(Hashmap *map, void *key)
 {
+    assert(map != NULL);
+    assert(key != NULL);
+
     uint32_t hash = 0;
     DArray *bucket = Hashmap_find_bucket(map, key, 0, &hash);
 
@@ -161,6 +178,9 @@ void *Hashmap_get(Hashmap *map, void *key)
 
 int Hashmap_traverse(Hashmap *map, Hashmap_traverse_cb traverse_cb)
 {
+    assert(map != NULL);
+    assert(traverse_cb != NULL);
+
     int i = -1;
 
     while (DArray_iterator_next(map->buckets, &i)) {
@@ -186,6 +206,9 @@ int Hashmap_traverse(Hashmap *map, Hashmap_traverse_cb traverse_cb)
 
 void *Hashmap_remove(Hashmap *map, void *key)
 {
+    assert(map != NULL);
+    assert(key != NULL);
+
     uint32_t hash = 0;
     DArray *bucket = Hashmap_find_bucket(map, key, 0, &hash);
 
