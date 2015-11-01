@@ -198,6 +198,9 @@ void *Hashmap_remove(Hashmap *map, void *key)
     HashmapNode *node = DArray_get(bucket, i);
     assert(node != NULL);
 
+    free(node);
+    DArray_remove(bucket, i);
+
     void *data = node->data;
 
     // why is this needed?
