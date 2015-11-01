@@ -18,15 +18,6 @@ struct tagbstring test_value_2 = bsStatic("test value 2");
 struct tagbstring test_key_3 = bsStatic("test key 3");
 struct tagbstring test_value_3 = bsStatic("test value 3");
 
-// -1037811338
-struct tagbstring test_collision_key_1 = bsStatic("Exobasidiaceae");
-struct tagbstring test_collision_key_2 = bsStatic("gangster");
-
-// -1125762254
-struct tagbstring test_collision_key_3 = bsStatic("knavishness");
-struct tagbstring test_collision_key_4 = bsStatic("undiminishable");
-
-
 static int traverse_called = 0;
 
 static int traverse_good_cb(HashmapNode *node)
@@ -97,28 +88,6 @@ char *test_set_sameKeyTwice()
 
     Hashmap_set(map, &test_key_1, &test_value_1);
     assert(rc == 0 && "Failed to set value in map.");
-
-    Hashmap_destroy(map);
-
-    return NULL;
-}
-
-char *test_get_set_keysCollide()
-{
-    // @FIXME this test should actually fail because keys collide?!
-    Hashmap *map = Hashmap_create(NULL, NULL);
-
-    int rc = Hashmap_set(map, &test_collision_key_1, &test_value_1);
-    assert(rc == 0 && "Failed to set value in map.");
-
-    Hashmap_set(map, &test_collision_key_2, &test_value_2);
-    assert(rc == 0 && "Failed to set value in map.");
-
-    bstring result = Hashmap_get(map, &test_collision_key_1);
-    assert(&test_value_1 == result);
-
-    result = Hashmap_get(map, &test_collision_key_2);
-    assert(&test_value_2 == result);
 
     Hashmap_destroy(map);
 
@@ -219,7 +188,6 @@ char *all_tests() {
     mu_run_test(test_traverse);
     mu_run_test(test_traverse_callbackInterruptsTraversal);
     mu_run_test(test_set_sameKeyTwice);
-    mu_run_test(test_get_set_keysCollide);
 
     return NULL;
 }
