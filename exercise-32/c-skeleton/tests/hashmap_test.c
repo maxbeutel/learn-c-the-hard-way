@@ -125,11 +125,11 @@ char *test_get_set_keysCollide()
     return NULL;
 }
 
-char *test_delete_mapIsEmpty()
+char *test_remove_mapIsEmpty()
 {
     Hashmap *map = Hashmap_create(NULL, NULL);
 
-    bstring result = Hashmap_delete(map, &test_key_1);
+    bstring result = Hashmap_remove(map, &test_key_1);
     assert(result == NULL && "Deleting non-existing key returned non-NULL result.");
 
     Hashmap_destroy(map);
@@ -137,17 +137,17 @@ char *test_delete_mapIsEmpty()
     return NULL;
 }
 
-char *test_delete()
+char *test_remove()
 {
     Hashmap *map = Hashmap_create(NULL, NULL);
 
     Hashmap_set(map, &test_key_2, &test_value_2);
     Hashmap_set(map, &test_key_3, &test_value_3);
 
-    bstring result = Hashmap_delete(map, &test_key_2);
+    bstring result = Hashmap_remove(map, &test_key_2);
     assert(&test_value_2 == result && "Deleting returned unexpected result.");
 
-    result = Hashmap_delete(map, &test_key_3);
+    result = Hashmap_remove(map, &test_key_3);
     assert(&test_value_3 == result && "Deleting returned unexpected result.");
 
     Hashmap_destroy(map);
@@ -213,8 +213,8 @@ char *all_tests() {
 
     mu_run_test(test_create);
     mu_run_test(test_get_set);
-    mu_run_test(test_delete_mapIsEmpty);
-    mu_run_test(test_delete);
+    mu_run_test(test_remove_mapIsEmpty);
+    mu_run_test(test_remove);
     mu_run_test(test_traverse_mapIsEmpty);
     mu_run_test(test_traverse);
     mu_run_test(test_traverse_callbackInterruptsTraversal);

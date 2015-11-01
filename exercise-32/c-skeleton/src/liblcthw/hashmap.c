@@ -180,7 +180,7 @@ int Hashmap_traverse(Hashmap *map, Hashmap_traverse_cb traverse_cb)
     return 0;
 }
 
-void *Hashmap_delete(Hashmap *map, void *key)
+void *Hashmap_remove(Hashmap *map, void *key)
 {
     uint32_t hash = 0;
     DArray *bucket = Hashmap_find_bucket(map, key, 0, &hash);
