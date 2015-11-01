@@ -40,6 +40,7 @@ Hashmap *Hashmap_create(Hashmap_compare compare, Hashmap_hash hash)
     Hashmap *map = calloc(1, sizeof(Hashmap));
     assert(map != NULL);
     // @TODO proper error handling
+    map->size = 0;
     map->compare = compare == NULL ? default_compare : compare;
     map->hash = hash  == NULL ? default_hash : hash;
     map->buckets = DArray_create(sizeof(DArray *), DEFAULT_NUMBER_OF_BUCKETS);
@@ -107,6 +108,8 @@ static inline DArray *Hashmap_find_bucket(Hashmap *map, void *key, int create, u
 
 int Hashmap_set(Hashmap *map, void *key, void *data)
 {
+    assert(map->size < INT_MAX);
+
     uint32_t hash = 0;
     DArray *bucket = Hashmap_find_bucket(map, key, 1, &hash);
     assert(bucket != NULL);
@@ -115,6 +118,7 @@ int Hashmap_set(Hashmap *map, void *key, void *data)
     assert(node != NULL);
 
     DArray_push(bucket, node);
+    map->size++;
 
     return 0;
 }
@@ -200,6 +204,9 @@ void *Hashmap_remove(Hashmap *map, void *key)
 
     free(node);
     DArray_remove(bucket, i);
+
+    map->size--;
+    assert(map->size >= 0);
 
     void *data = node->data;
 

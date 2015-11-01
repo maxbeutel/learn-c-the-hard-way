@@ -45,6 +45,7 @@ static int traverse_interruptingTraversal_cb(HashmapNode *node)
 char *test_create() {
     Hashmap *map = Hashmap_create(NULL, NULL);
     assert(map != NULL && "Failed to create map.");
+    assert(map->size == 0 && "Got unexpected initial size of map.");
 
     Hashmap_destroy(map);
 
@@ -73,6 +74,30 @@ char *test_get_set()
 
     result = Hashmap_get(map, &test_key_3);
     assert(&test_value_3 == result && "Got wrong value for key from map.");
+
+    Hashmap_destroy(map);
+
+    return NULL;
+}
+
+char *test_size()
+{
+    Hashmap *map = Hashmap_create(NULL, NULL);
+
+    Hashmap_set(map, &test_key_1, &test_value_1);
+    assert(map->size == 1 && "Got wrong size from map.");
+
+    Hashmap_set(map, &test_key_2, &test_value_2);
+    assert(map->size == 2 && "Got wrong size from map.");
+
+    Hashmap_remove(map, &test_key_1);
+    assert(map->size == 1 && "Got wrong size from map.");
+
+    Hashmap_remove(map, &test_key_1);
+    assert(map->size == 1 && "Got wrong size from map (removing already removed key).");
+
+    Hashmap_remove(map, &test_key_2);
+    assert(map->size == 0 && "Got wrong size from map.");
 
     Hashmap_destroy(map);
 
@@ -188,6 +213,7 @@ char *all_tests() {
     mu_run_test(test_traverse);
     mu_run_test(test_traverse_callbackInterruptsTraversal);
     mu_run_test(test_set_sameKeyTwice);
+    mu_run_test(test_size);
 
     return NULL;
 }

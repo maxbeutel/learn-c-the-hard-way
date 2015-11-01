@@ -15,6 +15,7 @@ typedef struct Hashmap {
     DArray *buckets;
     Hashmap_compare compare;
     Hashmap_hash hash;
+    int size;
 } Hashmap;
 
 typedef struct HashmapNode {
