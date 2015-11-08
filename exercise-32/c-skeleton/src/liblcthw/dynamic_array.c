@@ -236,6 +236,7 @@ int DArray_iterator_next(DArray *array, int *index)
 {
     assert(array != NULL);
     assert(index != NULL);
+    assert(*index <= INT_MAX - 1);
 
     if (array->size == 0) {
         return 0;
