@@ -97,41 +97,33 @@ int Hashmap_set(Hashmap *map, void *key, void *data)
     assert(hash_index >= 0);
     assert(hash_index < HASHMAP_INITIAL_SIZE);
 
-    uint32_t bucket_index = map->arHash[hash_index];
+    uint32_t data_index = map->arHash[hash_index];
     printf("hash index %u\n", hash_index);
     printf("hash index int %d\n", hash_index);
-    printf("bucket index %u\n", bucket_index);
+    printf("data index %u\n", data_index);
 
-
-    uint32_t current_value_next = HASHMAP_INVALID_INDEX;
-
+    int collision_found = (data_index != HASHMAP_INVALID_INDEX);
 
     // found a collision
-    // the bucket this hash would go to is already defined
-    //map->arData[bucket_index].is_defined && map->arData[bucket_index].hash == hash
-    if (map->size != 0 && bucket_index != HASHMAP_INVALID_INDEX) {
+    // the arHash entry for this hash already points to a bucket which is in use
+    // we make the new entry the head of the collision list and the current one is the new entry.next
+    if (collision_found) {
         printf("Already defined\n");
-
-        uint32_t next_bucket_index = map->arData[bucket_index].next;
-
-        if (next_bucket_index != HASHMAP_INVALID_INDEX) {
-            current_value_next = next_bucket_index;
-        }
-
-         map->arData[bucket_index].next = map->size;
     // completely new entry
+    // it is the head of the collision list, its next value is HASHMAP_INVALID_INDEX
     } else {
         printf("Not yet defined, setting new entry in arHash\n");
-
-        map->arHash[hash_index] = map->size;
     }
 
     // assign data to always growing arData
     map->arData[map->size].hash = hash;
     map->arData[map->size].key = key;
     map->arData[map->size].data = data;
-    map->arData[map->size].next = current_value_next;
+    map->arData[map->size].next = (collision_found ? data_index : HASHMAP_INVALID_INDEX);
     map->arData[map->size].is_defined = 1;
+
+    // update arHash, with index of newly created arData entry
+    map->arHash[hash_index] = map->size;
 
     map->size++;
 
@@ -193,6 +185,75 @@ void *Hashmap_remove(Hashmap *map, void *key)
     map->size++;
 
     return node_data;
+}
+
+// debug
+#define UNUSED(x) (void)(x)
+
+int Hashmap_iterator_next(Hashmap *map, int *index, void **key_out, void **data_out)
+{
+    assert(map != NULL);
+    assert(index != NULL);
+    assert(*index < INT_MAX - 1);
+
+    if (map->size == 0) {
+        return 0;
+    }
+
+    if (*index < -1) {
+        return 0;
+    }
+
+    printf("index is %d\n", *index);
+
+    for (int i = *index + 1; i < map->size; i++) {
+        HashmapBucket bucket = map->arData[i];
+
+        if (bucket.is_defined) {
+            *index = i;
+
+            *key_out = bucket.key;
+            *data_out = bucket.data;
+
+            // next iteration would be already out of bounds, so tell caller
+            // to end iteration
+            return (i == map->size - 1 ? 0 : 1);
+        }
+    }
+
+    return 0;
+}
+
+int Hashmap_iterator_prev(Hashmap *map, int *index, void **key_out, void **data_out)
+{
+    assert(map != NULL);
+    assert(index != NULL);
+    assert(*index < INT_MAX - 1);
+
+    if (map->size == 0) {
+        return 0;
+    }
+
+    if (*index < -1) {
+        return 0;
+    }
+
+    for (int i = (*index == -1 ? map->size - 1 : *index - 1); i >= 0; i--) {
+        HashmapBucket bucket = map->arData[i];
+
+        if (bucket.is_defined) {
+            *index = i;
+
+            *key_out = bucket.key;
+            *data_out = bucket.data;
+
+            // next iteration would be already out of bounds, so tell caller
+            // to end iteration
+            return (*index - 1 == -1 ? 0 : 1);
+        }
+    }
+
+    return 0;
 }
 
 void Hashmap_debug_dump(Hashmap *map)

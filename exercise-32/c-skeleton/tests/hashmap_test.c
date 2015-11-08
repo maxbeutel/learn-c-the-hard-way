@@ -29,30 +29,6 @@ static uint32_t test_strlen_is_hash(void *key)
     return len;
 }
 
-/* static int traverse_called = 0; */
-
-/* static int traverse_good_cb(HashmapBucket *node) */
-/* { */
-/*     UNUSED(node); */
-
-/*     traverse_called++; */
-
-/*     return 0; */
-/* } */
-
-/* static int traverse_interruptingTraversal_cb(HashmapBucket *node) */
-/* { */
-/*     UNUSED(node); */
-
-/*     traverse_called++; */
-
-/*     if (traverse_called == 2) { */
-/*         return 1; */
-/*     } */
-
-/*     return 0; */
-/* } */
-
 char *test_create() {
     Hashmap *map = Hashmap_create(NULL, NULL);
     assert(map != NULL && "Failed to create map.");
@@ -128,7 +104,7 @@ char *test_get_set_keyCollisions()
     return NULL;
 }
 
-/* char *test_size() */
+/*char *test_size() */
 /* { */
 /*     Hashmap *map = Hashmap_create(NULL, NULL); */
 
@@ -197,75 +173,81 @@ char *test_get_set_keyCollisions()
 /*     return NULL; */
 /* } */
 
-/* char *test_traverse_mapIsEmpty() */
-/* { */
-/*     traverse_called = 0; */
+char *test_iterationForward()
+{
+    Hashmap *map = Hashmap_create(NULL, test_strlen_is_hash);
 
-/*     Hashmap *map = Hashmap_create(NULL, NULL); */
+    Hashmap_set(map, &test_key_1, &test_value_1);
+    Hashmap_set(map, &test_key_2, &test_value_2);
+    Hashmap_set(map, &test_key_3, &test_value_3);
 
-/*     int rc = Hashmap_traverse(map, traverse_good_cb); */
-/*     assert(rc == 0 && "Traversing of map failed."); */
-/*     assert(traverse_called == 0 && "Expected 0 calls to traverse callback."); */
+    bstring key_out = NULL;
+    bstring data_out = NULL;
+    int index = -1;
 
-/*     Hashmap_destroy(map); */
+    assert(
+        Hashmap_iterator_next(map, &index, (void**) (&key_out), (void**) (&data_out)) == 1
+        && "Expected to continue to next element."
+    );
+    assert(&test_key_1 == key_out && "Got wrong key when iterating map.");
+    assert(&test_value_1 == data_out && "Got wrong data when iterating map.");
 
-/*     return NULL; */
-/* } */
+    assert(
+        Hashmap_iterator_next(map, &index, (void**) (&key_out), (void**) (&data_out)) == 1
+        && "Expected to continue to next element."
+    );
+    assert(&test_key_2 == key_out && "Got wrong key when iterating map.");
+    assert(&test_value_2 == data_out && "Got wrong data when iterating map.");
 
-/* char *test_traverse() */
-/* { */
-/*     traverse_called = 0; */
+    assert(
+        Hashmap_iterator_next(map, &index, (void**) (&key_out), (void**) (&data_out)) == 0
+        && "Expected to end iteration."
+    );
+    assert(&test_key_3 == key_out && "Got wrong key when iterating map.");
+    assert(&test_value_3 == data_out && "Got wrong data when iterating map.");
 
-/*     Hashmap *map = Hashmap_create(NULL, NULL); */
+    Hashmap_destroy(map);
 
-/*     Hashmap_set(map, &test_key_1, &test_value_1); */
-/*     Hashmap_set(map, &test_key_2, &test_value_2); */
-/*     Hashmap_set(map, &test_key_3, &test_value_3); */
+    return NULL;
+}
 
-/*     int rc = Hashmap_traverse(map, traverse_good_cb); */
-/*     assert(rc == 0 && "Traversing of map failed."); */
-/*     assert(traverse_called == 3 && "Expected traverse callback to be called."); */
+char *test_iterationBackward()
+{
+    Hashmap *map = Hashmap_create(NULL, test_strlen_is_hash);
 
-/*     Hashmap_destroy(map); */
+    Hashmap_set(map, &test_key_1, &test_value_1);
+    Hashmap_set(map, &test_key_2, &test_value_2);
+    Hashmap_set(map, &test_key_3, &test_value_3);
 
-/*     return NULL; */
-/* } */
+    bstring key_out = NULL;
+    bstring data_out = NULL;
+    int index = -1;
 
-/* char *test_traverse_callbackInterruptsTraversal() */
-/* { */
-/*     traverse_called = 0; */
+    assert(
+        Hashmap_iterator_prev(map, &index, (void**) (&key_out), (void**) (&data_out)) == 1
+        && "Expected to continue to prev element."
+    );
+    assert(&test_key_3 == key_out && "Got wrong key when iterating map.");
+    assert(&test_value_3 == data_out && "Got wrong data when iterating map.");
 
-/*     Hashmap *map = Hashmap_create(NULL, NULL); */
+    assert(
+        Hashmap_iterator_prev(map, &index, (void**) (&key_out), (void**) (&data_out)) == 1
+        && "Expected to continue to prev element."
+    );
+    assert(&test_key_2 == key_out && "Got wrong key when iterating map.");
+    assert(&test_value_2 == data_out && "Got wrong data when iterating map.");
 
-/*     Hashmap_set(map, &test_key_1, &test_value_1); */
-/*     Hashmap_set(map, &test_key_2, &test_value_2); */
-/*     Hashmap_set(map, &test_key_3, &test_value_3); */
+    assert(
+        Hashmap_iterator_prev(map, &index, (void**) (&key_out), (void**) (&data_out)) == 0
+        && "Expected to end iteration."
+    );
+    assert(&test_key_1 == key_out && "Got wrong key when iterating map.");
+    assert(&test_value_1 == data_out && "Got wrong data when iterating map.");
 
-/*     int rc = Hashmap_traverse(map, traverse_interruptingTraversal_cb); */
-/*     assert(rc == 1 && "Expected traversing of map to be interruped."); */
-/*     assert(traverse_called == 2 && "Expected callback to interrupt traversal."); */
+    Hashmap_destroy(map);
 
-/*     Hashmap_destroy(map); */
-
-/*     return NULL; */
-/* } */
-
-/* char *test_iterationForward() */
-/* { */
-/*     Hashmap *map = Hashmap_create(NULL, NULL); */
-
-/*     Hashmap_set(map, &test_key_1, &test_value_1); */
-/*     Hashmap_set(map, &test_key_2, &test_value_2); */
-/*     Hashmap_set(map, &test_key_3, &test_value_3); */
-
-/*     while(Hashmap_iterator_next(map)) { */
-
-/*     } */
-
-/*     Hashmap_destroy(map); */
-
-/*     return NULL; */
-/* } */
+    return NULL;
+}
 
 char *all_tests() {
     mu_suite_start();
@@ -273,11 +255,10 @@ char *all_tests() {
     mu_run_test(test_create);
     mu_run_test(test_get_set);
     mu_run_test(test_get_set_keyCollisions);
+    mu_run_test(test_iterationForward);
+    mu_run_test(test_iterationBackward);
     /* mu_run_test(test_remove_mapIsEmpty); */
     /* mu_run_test(test_remove); */
-    /* mu_run_test(test_traverse_mapIsEmpty); */
-    /* mu_run_test(test_traverse); */
-    /* mu_run_test(test_traverse_callbackInterruptsTraversal); */
     /* mu_run_test(test_set_sameKeyTwice); */
     /* mu_run_test(test_size); */
 

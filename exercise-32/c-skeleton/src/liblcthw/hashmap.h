@@ -27,8 +27,6 @@ typedef struct Hashmap {
     int size;
 } Hashmap;
 
-/* typedef int (*Hashmap_traverse_cb)(HashmapBucket *node); */
-
 Hashmap *Hashmap_create(Hashmap_compare compare, Hashmap_hash hash);
 void Hashmap_destroy(Hashmap *map);
 
@@ -36,12 +34,10 @@ int Hashmap_set(Hashmap *map, void *key, void *data);
 void *Hashmap_get(Hashmap *map, void *key);
 void *Hashmap_remove(Hashmap *map, void *key);
 
-void Hashmap_debug_dump(Hashmap *map);
-/* // @deprecated */
-/* int Hashmap_traverse(Hashmap *map, Hashmap_traverse_cb traverse_cb); */
-
 // contains(void *data);
-/* int Hashmap_iterator_next(DArray *array, int *index); */
-/* int Hashmap_iterator_prev(DArray *array, int *index); */
+int Hashmap_iterator_next(Hashmap *map, int *key, void **key_out, void **data_out);
+int Hashmap_iterator_prev(Hashmap *map, int *key, void **key_out, void **data_out);
+
+void Hashmap_debug_dump(Hashmap *map);
 
 #endif
