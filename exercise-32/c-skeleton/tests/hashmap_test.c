@@ -52,8 +52,6 @@ char *test_get_set()
     rc = Hashmap_set(map, &test_key_3, &test_value_3);
     assert(rc == 0 && "Failed to set value in map.");
 
-    Hashmap_debug_dump(map);
-
     bstring result = Hashmap_get(map, &test_key_1);
     assert(&test_value_1 == result && "Got wrong value for key from map.");
 
@@ -75,20 +73,13 @@ char *test_get_set_keyCollisions()
     int rc = Hashmap_set(map, &test_key_1, &test_value_1);
     assert(rc == 0 && "Failed to set value in map.");
 
-     /* Hashmap_debug_dump(map); */
-
     // using a key that is different then key_1, but returns the same hash!
     rc = Hashmap_set(map, &test_key_4, &test_value_2);
     assert(rc == 0 && "Failed to set value in map.");
 
-    /* Hashmap_debug_dump(map); */
-
     // using a key that is different then key_1, but returns the same hash!
     rc = Hashmap_set(map, &test_key_5, &test_value_3);
     assert(rc == 0 && "Failed to set value in map.");
-
-
-
 
     bstring result = Hashmap_get(map, &test_key_1);
     assert(&test_value_1 == result && "Got wrong value for key from map.");
@@ -103,30 +94,6 @@ char *test_get_set_keyCollisions()
 
     return NULL;
 }
-
-/*char *test_size() */
-/* { */
-/*     Hashmap *map = Hashmap_create(NULL, NULL); */
-
-/*     Hashmap_set(map, &test_key_1, &test_value_1); */
-/*     assert(map->size == 1 && "Got wrong size from map."); */
-
-/*     Hashmap_set(map, &test_key_2, &test_value_2); */
-/*     assert(map->size == 2 && "Got wrong size from map."); */
-
-/*     Hashmap_remove(map, &test_key_1); */
-/*     assert(map->size == 1 && "Got wrong size from map."); */
-
-/*     Hashmap_remove(map, &test_key_1); */
-/*     assert(map->size == 1 && "Got wrong size from map (removing already removed key)."); */
-
-/*     Hashmap_remove(map, &test_key_2); */
-/*     assert(map->size == 0 && "Got wrong size from map."); */
-
-/*     Hashmap_destroy(map); */
-
-/*     return NULL; */
-/* } */
 
 /* char *test_set_sameKeyTwice() */
 /* { */
@@ -143,35 +110,110 @@ char *test_get_set_keyCollisions()
 /*     return NULL; */
 /* } */
 
-/* char *test_remove_mapIsEmpty() */
-/* { */
-/*     Hashmap *map = Hashmap_create(NULL, NULL); */
+char *test_remove_mapIsEmpty()
+{
+    Hashmap *map = Hashmap_create(NULL, NULL);
 
-/*     bstring result = Hashmap_remove(map, &test_key_1); */
-/*     assert(result == NULL && "Deleting non-existing key returned non-NULL result."); */
+    bstring result = Hashmap_remove(map, &test_key_1);
+    assert(result == NULL && "Removing non-existing key returned non-NULL result.");
 
-/*     Hashmap_destroy(map); */
+    Hashmap_destroy(map);
 
-/*     return NULL; */
-/* } */
+    return NULL;
+}
 
-/* char *test_remove() */
-/* { */
-/*     Hashmap *map = Hashmap_create(NULL, NULL); */
+char *test_remove()
+{
+    Hashmap *map = Hashmap_create(NULL, test_strlen_is_hash);
 
-/*     Hashmap_set(map, &test_key_2, &test_value_2); */
-/*     Hashmap_set(map, &test_key_3, &test_value_3); */
+    Hashmap_set(map, &test_key_2, &test_value_2);
+    Hashmap_set(map, &test_key_3, &test_value_3);
 
-/*     bstring result = Hashmap_remove(map, &test_key_2); */
-/*     assert(&test_value_2 == result && "Deleting returned unexpected result."); */
+    bstring result = Hashmap_remove(map, &test_key_2);
+    assert(&test_value_2 == result && "Removing returned unexpected result.");
 
-/*     result = Hashmap_remove(map, &test_key_3); */
-/*     assert(&test_value_3 == result && "Deleting returned unexpected result."); */
+    result = Hashmap_remove(map, &test_key_3);
+    assert(&test_value_3 == result && "Removing returned unexpected result.");
 
-/*     Hashmap_destroy(map); */
+    Hashmap_destroy(map);
 
-/*     return NULL; */
-/* } */
+    return NULL;
+}
+
+char *test_remove_keyCollisions_1()
+{
+    Hashmap *map = Hashmap_create(NULL, test_strlen_is_hash);
+
+    Hashmap_set(map, &test_key_4, &test_value_1);
+    Hashmap_set(map, &test_key_5, &test_value_3);
+    Hashmap_set(map, &test_key_2, &test_value_2);
+
+    bstring result = Hashmap_remove(map, &test_key_5);
+    assert(&test_value_3 == result && "Removing returned unexpected result.");
+    assert(map->size == 2 && "Failed to assert map size after removing key.");
+
+    result = Hashmap_remove(map, &test_key_2);
+    assert(&test_value_2 == result && "Removing returned unexpected result.");
+    assert(map->size == 1 && "Failed to assert map size after removing key.");
+
+    result = Hashmap_remove(map, &test_key_4);
+    assert(&test_value_1 == result && "Removing returned unexpected result.");
+    assert(map->size == 0 && "Failed to assert map size after removing key.");
+
+    Hashmap_destroy(map);
+
+    return NULL;
+}
+
+char *test_remove_keyCollisions_2()
+{
+    Hashmap *map = Hashmap_create(NULL, test_strlen_is_hash);
+
+    Hashmap_set(map, &test_key_1, &test_value_1);
+    Hashmap_set(map, &test_key_4, &test_value_2);
+    Hashmap_set(map, &test_key_5, &test_value_3);
+
+    bstring result = Hashmap_remove(map, &test_key_5);
+    assert(&test_value_3 == result && "Removing returned unexpected result.");
+    assert(map->size == 2 && "Failed to assert map size after removing key.");
+
+    result = Hashmap_remove(map, &test_key_4);
+    assert(&test_value_2 == result && "Removing returned unexpected result.");
+    assert(map->size == 1 && "Failed to assert map size after removing key.");
+
+    result = Hashmap_remove(map, &test_key_1);
+    assert(&test_value_1 == result && "Removing returned unexpected result.");
+    assert(map->size == 0 && "Failed to assert map size after removing key.");
+
+    Hashmap_destroy(map);
+
+    return NULL;
+}
+
+char *test_remove_keyCollisions_3()
+{
+    Hashmap *map = Hashmap_create(NULL, test_strlen_is_hash);
+
+    Hashmap_set(map, &test_key_1, &test_value_1);
+    Hashmap_set(map, &test_key_4, &test_value_2);
+    Hashmap_set(map, &test_key_5, &test_value_3);
+
+    bstring result = Hashmap_remove(map, &test_key_1);
+    assert(&test_value_1 == result && "Removing returned unexpected result.");
+    assert(map->size == 2 && "Failed to assert map size after removing key.");
+
+    result = Hashmap_remove(map, &test_key_4);
+    assert(&test_value_2 == result && "Removing returned unexpected result.");
+    assert(map->size == 1 && "Failed to assert map size after removing key.");
+
+    result = Hashmap_remove(map, &test_key_5);
+    assert(&test_value_3 == result && "Removing returned unexpected result.");
+    assert(map->size == 0 && "Failed to assert map size after removing key.");
+
+    Hashmap_destroy(map);
+
+    return NULL;
+}
 
 char *test_iterationForward()
 {
@@ -257,10 +299,12 @@ char *all_tests() {
     mu_run_test(test_get_set_keyCollisions);
     mu_run_test(test_iterationForward);
     mu_run_test(test_iterationBackward);
-    /* mu_run_test(test_remove_mapIsEmpty); */
-    /* mu_run_test(test_remove); */
+    mu_run_test(test_remove_mapIsEmpty);
+    mu_run_test(test_remove);
+    mu_run_test(test_remove_keyCollisions_1);
+    mu_run_test(test_remove_keyCollisions_2);
+    mu_run_test(test_remove_keyCollisions_3);
     /* mu_run_test(test_set_sameKeyTwice); */
-    /* mu_run_test(test_size); */
 
     return NULL;
 }

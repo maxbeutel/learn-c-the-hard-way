@@ -89,7 +89,6 @@ int Hashmap_set(Hashmap *map, void *key, void *data)
     assert(map->size < HASHMAP_INITIAL_SIZE);
 
     uint32_t hash = map->hash(key);
-    printf("hash => %u\n", hash);
 
     // save index of actual data
     // @TODO HASHMAP_INITIAL_SIZE should be the current physical size of map->arData
@@ -98,22 +97,8 @@ int Hashmap_set(Hashmap *map, void *key, void *data)
     assert(hash_index < HASHMAP_INITIAL_SIZE);
 
     uint32_t data_index = map->arHash[hash_index];
-    printf("hash index %u\n", hash_index);
-    printf("hash index int %d\n", hash_index);
-    printf("data index %u\n", data_index);
 
     int collision_found = (data_index != HASHMAP_INVALID_INDEX);
-
-    // found a collision
-    // the arHash entry for this hash already points to a bucket which is in use
-    // we make the new entry the head of the collision list and the current one is the new entry.next
-    if (collision_found) {
-        printf("Already defined\n");
-    // completely new entry
-    // it is the head of the collision list, its next value is HASHMAP_INVALID_INDEX
-    } else {
-        printf("Not yet defined, setting new entry in arHash\n");
-    }
 
     // assign data to always growing arData
     map->arData[map->size].hash = hash;
@@ -136,19 +121,12 @@ void *Hashmap_get(Hashmap *map, void *key)
     assert(key != NULL);
 
     uint32_t hash = map->hash(key);
-    uint32_t hash_index = hash & (HASHMAP_INITIAL_SIZE - 1);
+    uint32_t hash_index = hash % HASHMAP_INITIAL_SIZE;
 
     uint32_t data_index = map->arHash[hash_index];
 
     while (data_index != HASHMAP_INVALID_INDEX) {
-        printf("iterating at %u\n", data_index);
         HashmapBucket bucket = map->arData[data_index];
-
-        /* if (hash == bucket.hash) printf("hash matches bucket hash\n"); */
-        /* else printf("hash and bucket hash not matching\n"); */
-
-        /* if (map->compare(key, bucket.key) == 0) printf("key and bucket key matching\n"); */
-        /* else printf("key and bucket key not matching\n"); */
 
         if (hash == bucket.hash && map->compare(key, bucket.key) == 0) {
             return bucket.data;
@@ -166,25 +144,62 @@ void *Hashmap_remove(Hashmap *map, void *key)
     assert(key != NULL);
 
     uint32_t hash = map->hash(key);
-    uint32_t bucket_n = hash % HASHMAP_INITIAL_SIZE; // @TODO this should be the current physical size
-    assert(bucket_n >= 0);
+    uint32_t hash_index = hash % HASHMAP_INITIAL_SIZE; // @TODO this should be the current physical size
 
-    int data_index = map->arHash[bucket_n];
-    assert(data_index >= 0);
-    assert(data_index < map->size);
+    uint32_t data_index = map->arHash[hash_index];
+    int i = 0;
+    uint32_t previous_data_index = HASHMAP_INVALID_INDEX;
 
-    void *node_data = map->arData[data_index].data;
+    while (data_index != HASHMAP_INVALID_INDEX) {
+        int is_collision_list_head = (i == 0);
 
-    map->arData[data_index].hash = 0;
-    map->arData[data_index].key = NULL;
-    map->arData[data_index].data = NULL;
-    map->arData[data_index].is_defined = 0;
+        if (hash == map->arData[data_index].hash && map->compare(key, map->arData[data_index].key) == 0) {
+            // current entry is head of collision list, we need to update that
+            if (is_collision_list_head) {
+                map->arHash[hash_index] = map->arData[data_index].next;
+            }
 
-    map->arHash[bucket_n] = data_index;
+            // keep collision linked list in tact
+            if (previous_data_index != HASHMAP_INVALID_INDEX) {
+                assert(map->arData[previous_data_index].next == data_index);
 
-    map->size++;
+                map->arData[previous_data_index].next = map->arData[data_index].next;
+            }
 
-    return node_data;
+            void *bucket_data = map->arData[data_index].data;
+
+            map->arData[data_index].hash = 0;
+            map->arData[data_index].key = NULL;
+            map->arData[data_index].data = NULL;
+            map->arData[data_index].next = HASHMAP_INVALID_INDEX;
+            map->arData[data_index].is_defined = 0;
+
+            map->size--;
+
+            return bucket_data;
+        }
+
+        previous_data_index = data_index;
+        data_index = map->arData[data_index].next;
+
+        i++;
+    }
+
+    return NULL;
+
+
+    /* void *node_data = map->arData[data_index].data; */
+
+    /* map->arData[data_index].hash = 0; */
+    /* map->arData[data_index].key = NULL; */
+    /* map->arData[data_index].data = NULL; */
+    /* map->arData[data_index].is_defined = 0; */
+
+    /* map->arHash[bucket_n] = data_index; */
+
+    /* map->size++; */
+
+
 }
 
 // debug
@@ -203,8 +218,6 @@ int Hashmap_iterator_next(Hashmap *map, int *index, void **key_out, void **data_
     if (*index < -1) {
         return 0;
     }
-
-    printf("index is %d\n", *index);
 
     for (int i = *index + 1; i < map->size; i++) {
         HashmapBucket bucket = map->arData[i];
