@@ -4,10 +4,11 @@
 
 #include <liblcthw/bstrlib.h>
 
+#include "hashmap.h"
+
 // DEBUG
 #include <stdio.h>
-
-#include "hashmap.h"
+#define UNUSED(x) (void)(x)
 
 static int default_compare(void *key_a, void *key_b)
 {
@@ -186,24 +187,7 @@ void *Hashmap_remove(Hashmap *map, void *key)
     }
 
     return NULL;
-
-
-    /* void *node_data = map->arData[data_index].data; */
-
-    /* map->arData[data_index].hash = 0; */
-    /* map->arData[data_index].key = NULL; */
-    /* map->arData[data_index].data = NULL; */
-    /* map->arData[data_index].is_defined = 0; */
-
-    /* map->arHash[bucket_n] = data_index; */
-
-    /* map->size++; */
-
-
 }
-
-// debug
-#define UNUSED(x) (void)(x)
 
 int Hashmap_iterator_next(Hashmap *map, int *index, void **key_out, void **data_out)
 {
