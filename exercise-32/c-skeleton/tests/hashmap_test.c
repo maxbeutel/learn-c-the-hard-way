@@ -291,6 +291,23 @@ char *test_iterationBackward()
     return NULL;
 }
 
+char *test_contains()
+{
+    Hashmap *map = Hashmap_create(NULL, test_strlen_is_hash);
+
+    assert(Hashmap_contains(map, &test_key_1) == 0 && "Map was not expected to contain key.");
+
+    Hashmap_set(map, &test_key_1, &test_value_1);
+    Hashmap_set(map, &test_key_2, &test_value_2);
+
+    assert(Hashmap_contains(map, &test_key_1) == 1 && "Map was expected to contain key.");
+    assert(Hashmap_contains(map, &test_key_2) == 1 && "Map was expected to contain key.");
+
+    Hashmap_destroy(map);
+
+    return NULL;
+}
+
 char *all_tests() {
     mu_suite_start();
 
@@ -304,6 +321,7 @@ char *all_tests() {
     mu_run_test(test_remove_keyCollisions_1);
     mu_run_test(test_remove_keyCollisions_2);
     mu_run_test(test_remove_keyCollisions_3);
+    mu_run_test(test_contains);
     /* mu_run_test(test_set_sameKeyTwice); */
 
     return NULL;

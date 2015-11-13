@@ -34,9 +34,10 @@ int Hashmap_set(Hashmap *map, void *key, void *data);
 void *Hashmap_get(Hashmap *map, void *key);
 void *Hashmap_remove(Hashmap *map, void *key);
 
-// contains(void *data);
-int Hashmap_iterator_next(Hashmap *map, int *key, void **key_out, void **data_out);
-int Hashmap_iterator_prev(Hashmap *map, int *key, void **key_out, void **data_out);
+int Hashmap_iterator_next(Hashmap *map, int *key, void **key_out, void **data_out); // @FIXME why is this called int *key, should be int *iterator
+int Hashmap_iterator_prev(Hashmap *map, int *key, void **key_out, void **data_out); // same
+
+int Hashmap_contains(Hashmap *map, void *key);
 
 void Hashmap_debug_dump(Hashmap *map);
 

@@ -269,6 +269,36 @@ int Hashmap_iterator_prev(Hashmap *map, int *index, void **key_out, void **data_
     return 0;
 }
 
+int Hashmap_contains(Hashmap *map, void *key)
+{
+    assert(map != NULL);
+    assert(key != NULL);
+
+    UNUSED(map);
+    UNUSED(key);
+
+    if (map->size == 0) {
+        return 0;
+    }
+
+    uint32_t hash = map->hash(key);
+    uint32_t hash_index = hash % HASHMAP_INITIAL_SIZE;
+
+    uint32_t data_index = map->arHash[hash_index];
+
+    while (data_index != HASHMAP_INVALID_INDEX) {
+        HashmapBucket bucket = map->arData[data_index];
+
+        if (hash == bucket.hash && map->compare(key, bucket.key) == 0) {
+            return 1;
+        }
+
+        data_index = bucket.next;
+    }
+
+    return 0;
+}
+
 void Hashmap_debug_dump(Hashmap *map)
 {
     assert(map != 0);
