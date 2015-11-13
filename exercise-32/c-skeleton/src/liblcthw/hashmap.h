@@ -25,6 +25,7 @@ typedef struct Hashmap {
     HashmapBucket *arData;
     uint32_t *arHash;
     int size;
+    int capacity;
 } Hashmap;
 
 Hashmap *Hashmap_create(Hashmap_compare compare, Hashmap_hash hash);

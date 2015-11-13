@@ -22,15 +22,17 @@ static int default_compare(void *key_a, void *key_b)
 static uint32_t jenkins_one_at_a_time_hash(char *key, size_t len)
 {
     uint32_t hash, i;
-    for(hash = i = 0; i < len; ++i)
-    {
+
+    for (hash = i = 0; i < len; ++i) {
         hash += key[i];
         hash += (hash << 10);
         hash ^= (hash >> 6);
     }
+
     hash += (hash << 3);
     hash ^= (hash >> 11);
     hash += (hash << 15);
+
     return (hash >> 0);
 }
 
@@ -57,17 +59,15 @@ Hashmap *Hashmap_create(Hashmap_compare compare, Hashmap_hash hash)
     map->compare = compare == NULL ? default_compare : compare;
     map->hash = hash  == NULL ? default_hash : hash;
 
-    // @TODO optimization is to allocate one chunk of memory for both
     map->arData = calloc(HASHMAP_INITIAL_SIZE, sizeof(HashmapBucket));
     assert(map->arData != NULL);
 
-    /* map->arHash = calloc(HASHMAP_INITIAL_SIZE, sizeof(uint32_t)); */
-    /* assert(map->arHash != NULL); */
     map->arHash = malloc(sizeof(uint32_t) * HASHMAP_INITIAL_SIZE);
     assert(map->arHash != NULL);
     memset(map->arHash, HASHMAP_INVALID_INDEX, sizeof(uint32_t) * HASHMAP_INITIAL_SIZE);
 
     map->size = 0;
+    map->capacity = HASHMAP_INITIAL_SIZE;
 
     return map;
 }
@@ -87,26 +87,27 @@ int Hashmap_set(Hashmap *map, void *key, void *data)
     assert(map != NULL);
     assert(key != NULL);
     //    assert(map->size < INT_MAX);
-    assert(map->size < HASHMAP_INITIAL_SIZE);
+    assert(map->size < map->capacity);
 
     uint32_t hash = map->hash(key);
 
     // save index of actual data
-    // @TODO HASHMAP_INITIAL_SIZE should be the current physical size of map->arData
-    uint32_t hash_index = hash % HASHMAP_INITIAL_SIZE;
+    int hash_index = hash % map->capacity;
     assert(hash_index >= 0);
-    assert(hash_index < HASHMAP_INITIAL_SIZE);
+    assert(hash_index < map->capacity);
 
     uint32_t data_index = map->arHash[hash_index];
 
     int collision_found = (data_index != HASHMAP_INVALID_INDEX);
 
     // assign data to always growing arData
-    map->arData[map->size].hash = hash;
-    map->arData[map->size].key = key;
-    map->arData[map->size].data = data;
-    map->arData[map->size].next = (collision_found ? data_index : HASHMAP_INVALID_INDEX);
-    map->arData[map->size].is_defined = 1;
+    HashmapBucket *bucket = &map->arData[map->size];
+
+    bucket->hash = hash;
+    bucket->key = key;
+    bucket->data = data;
+    bucket->next = (collision_found ? data_index : HASHMAP_INVALID_INDEX);
+    bucket->is_defined = 1;
 
     // update arHash, with index of newly created arData entry
     map->arHash[hash_index] = map->size;
@@ -122,18 +123,18 @@ void *Hashmap_get(Hashmap *map, void *key)
     assert(key != NULL);
 
     uint32_t hash = map->hash(key);
-    uint32_t hash_index = hash % HASHMAP_INITIAL_SIZE;
+    int hash_index = hash % map->capacity;
 
     uint32_t data_index = map->arHash[hash_index];
 
     while (data_index != HASHMAP_INVALID_INDEX) {
-        HashmapBucket bucket = map->arData[data_index];
+        HashmapBucket *bucket = &map->arData[data_index];
 
-        if (hash == bucket.hash && map->compare(key, bucket.key) == 0) {
-            return bucket.data;
+        if (hash == bucket->hash && map->compare(key, bucket->key) == 0) {
+            return bucket->data;
         }
 
-        data_index = bucket.next;
+        data_index = bucket->next;
     }
 
     return NULL;
@@ -145,35 +146,37 @@ void *Hashmap_remove(Hashmap *map, void *key)
     assert(key != NULL);
 
     uint32_t hash = map->hash(key);
-    uint32_t hash_index = hash % HASHMAP_INITIAL_SIZE; // @TODO this should be the current physical size
+    int hash_index = hash % map->capacity;
 
     uint32_t data_index = map->arHash[hash_index];
     int i = 0;
     uint32_t previous_data_index = HASHMAP_INVALID_INDEX;
 
     while (data_index != HASHMAP_INVALID_INDEX) {
-        int is_collision_list_head = (i == 0);
+        HashmapBucket *bucket = &map->arData[data_index];
 
-        if (hash == map->arData[data_index].hash && map->compare(key, map->arData[data_index].key) == 0) {
+        if (hash == bucket->hash && map->compare(key, bucket->key) == 0) {
+            int is_collision_list_head = (i == 0);
+
             // current entry is head of collision list, we need to update that
             if (is_collision_list_head) {
-                map->arHash[hash_index] = map->arData[data_index].next;
+                map->arHash[hash_index] = bucket->next;
             }
 
             // keep collision linked list in tact
             if (previous_data_index != HASHMAP_INVALID_INDEX) {
                 assert(map->arData[previous_data_index].next == data_index);
 
-                map->arData[previous_data_index].next = map->arData[data_index].next;
+                map->arData[previous_data_index].next = bucket->next;
             }
 
-            void *bucket_data = map->arData[data_index].data;
+            void *bucket_data = bucket->data;
 
-            map->arData[data_index].hash = 0;
-            map->arData[data_index].key = NULL;
-            map->arData[data_index].data = NULL;
-            map->arData[data_index].next = HASHMAP_INVALID_INDEX;
-            map->arData[data_index].is_defined = 0;
+            bucket->hash = 0;
+            bucket->key = NULL;
+            bucket->data = NULL;
+            bucket->next = HASHMAP_INVALID_INDEX;
+            bucket->is_defined = 0;
 
             map->size--;
 
@@ -266,7 +269,7 @@ int Hashmap_contains(Hashmap *map, void *key)
     }
 
     uint32_t hash = map->hash(key);
-    uint32_t hash_index = hash % HASHMAP_INITIAL_SIZE;
+    int hash_index = hash % map->capacity;
 
     uint32_t data_index = map->arHash[hash_index];
 
@@ -287,7 +290,7 @@ void Hashmap_debug_dump(Hashmap *map)
 {
     assert(map != 0);
 
-    for (int i = 0; i < HASHMAP_INITIAL_SIZE; i++) {
+    for (int i = 0; i < map->capacity; i++) {
         HashmapBucket bucket = map->arData[i];
 
         printf("IDX %d\n", i);
@@ -303,7 +306,7 @@ void Hashmap_debug_dump(Hashmap *map)
 
     printf("\n");
 
-    for (int i = 0; i < HASHMAP_INITIAL_SIZE; i++) {
+    for (int i = 0; i < map->capacity; i++) {
         printf("arHash[%d] = dataIndex '%u'\n", i, map->arHash[i]);
     }
 
