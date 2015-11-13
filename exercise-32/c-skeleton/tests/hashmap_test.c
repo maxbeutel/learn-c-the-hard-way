@@ -95,20 +95,23 @@ char *test_get_set_keyCollisions()
     return NULL;
 }
 
-/* char *test_set_sameKeyTwice() */
-/* { */
-/*     Hashmap *map = Hashmap_create(NULL, NULL); */
+char *test_set_differentValueSameKey()
+{
+    Hashmap *map = Hashmap_create(NULL, NULL);
 
-/*     int rc = Hashmap_set(map, &test_key_1, &test_value_1); */
-/*     assert(rc == 0 && "Failed to set value in map."); */
+    int rc = Hashmap_set(map, &test_key_1, &test_value_1);
+    assert(rc == 0 && "Failed to set value in map.");
 
-/*     Hashmap_set(map, &test_key_1, &test_value_1); */
-/*     assert(rc == 0 && "Failed to set value in map."); */
+    Hashmap_set(map, &test_key_1, &test_value_2);
+    assert(rc == 0 && "Failed to set value in map.");
 
-/*     Hashmap_destroy(map); */
+    bstring result = Hashmap_get(map, &test_key_1);
+    assert(&test_value_2 == result && "Got wrong value for key from map.");
 
-/*     return NULL; */
-/* } */
+    Hashmap_destroy(map);
+
+    return NULL;
+}
 
 char *test_remove_mapIsEmpty()
 {
@@ -193,6 +196,31 @@ char *test_remove_keyCollisions_2()
 char *test_remove_keyCollisions_3()
 {
     Hashmap *map = Hashmap_create(NULL, test_strlen_is_hash);
+
+    Hashmap_set(map, &test_key_1, &test_value_1);
+    Hashmap_set(map, &test_key_4, &test_value_2);
+    Hashmap_set(map, &test_key_5, &test_value_3);
+
+    bstring result = Hashmap_remove(map, &test_key_1);
+    assert(&test_value_1 == result && "Removing returned unexpected result.");
+    assert(map->size == 2 && "Failed to assert map size after removing key.");
+
+    result = Hashmap_remove(map, &test_key_4);
+    assert(&test_value_2 == result && "Removing returned unexpected result.");
+    assert(map->size == 1 && "Failed to assert map size after removing key.");
+
+    result = Hashmap_remove(map, &test_key_5);
+    assert(&test_value_3 == result && "Removing returned unexpected result.");
+    assert(map->size == 0 && "Failed to assert map size after removing key.");
+
+    Hashmap_destroy(map);
+
+    return NULL;
+}
+
+char *test_remove_4()
+{
+    Hashmap *map = Hashmap_create(NULL, NULL);
 
     Hashmap_set(map, &test_key_1, &test_value_1);
     Hashmap_set(map, &test_key_4, &test_value_2);
@@ -314,6 +342,7 @@ char *all_tests() {
     mu_run_test(test_create);
     mu_run_test(test_get_set);
     mu_run_test(test_get_set_keyCollisions);
+    mu_run_test(test_set_differentValueSameKey);
     mu_run_test(test_iterationForward);
     mu_run_test(test_iterationBackward);
     mu_run_test(test_remove_mapIsEmpty);
@@ -321,8 +350,8 @@ char *all_tests() {
     mu_run_test(test_remove_keyCollisions_1);
     mu_run_test(test_remove_keyCollisions_2);
     mu_run_test(test_remove_keyCollisions_3);
+    mu_run_test(test_remove_4);
     mu_run_test(test_contains);
-    /* mu_run_test(test_set_sameKeyTwice); */
 
     return NULL;
 }
