@@ -336,6 +336,160 @@ char *test_contains()
     return NULL;
 }
 
+struct tagbstring test_expand_key_1 = bsStatic("aaaaaaaa");
+struct tagbstring test_expand_key_2 = bsStatic("bbbbbbbb");
+struct tagbstring test_expand_key_3 = bsStatic("cccccccc");
+struct tagbstring test_expand_key_4 = bsStatic("dddddddd");
+struct tagbstring test_expand_key_5 = bsStatic("eeeeeeee");
+struct tagbstring test_expand_key_6 = bsStatic("ffffffff");
+struct tagbstring test_expand_key_7 = bsStatic("gggggggg");
+struct tagbstring test_expand_key_8 = bsStatic("hhhhhhhh");
+struct tagbstring test_expand_key_9 = bsStatic("iiiiiiii");
+struct tagbstring test_expand_key_10 = bsStatic("jjjjjjjj");
+
+struct tagbstring test_expand_value_1 = bsStatic("aaaaaaaa value");
+struct tagbstring test_expand_value_2 = bsStatic("bbbbbbbb value");
+struct tagbstring test_expand_value_3 = bsStatic("cccccccc value");
+struct tagbstring test_expand_value_4 = bsStatic("dddddddd value");
+struct tagbstring test_expand_value_5 = bsStatic("eeeeeeee value");
+struct tagbstring test_expand_value_6 = bsStatic("ffffffff value");
+struct tagbstring test_expand_value_7 = bsStatic("gggggggg value");
+struct tagbstring test_expand_value_8 = bsStatic("hhhhhhhh value");
+struct tagbstring test_expand_value_9 = bsStatic("iiiiiiii value");
+struct tagbstring test_expand_value_10 = bsStatic("jjjjjjjj value");
+
+char *test_expandBehavior_simple()
+{
+    Hashmap *map = Hashmap_create(NULL, NULL);
+
+    Hashmap_set(map, &test_expand_key_1, &test_value_1);
+    Hashmap_set(map, &test_expand_key_2, &test_value_1);
+    Hashmap_set(map, &test_expand_key_3, &test_value_1);
+    Hashmap_set(map, &test_expand_key_4, &test_value_1);
+    Hashmap_set(map, &test_expand_key_5, &test_value_1);
+    Hashmap_set(map, &test_expand_key_6, &test_value_1);
+    Hashmap_set(map, &test_expand_key_7, &test_value_1);
+    Hashmap_set(map, &test_expand_key_8, &test_value_1);
+    Hashmap_set(map, &test_expand_key_9, &test_value_1);
+    Hashmap_set(map, &test_expand_key_10, &test_value_1);
+
+    assert(map->size == 10 && "Failed to assert map size after expanding.");
+
+    Hashmap_destroy(map);
+
+    return NULL;
+}
+
+char *test_expandBehavior_keyCollisions_1()
+{
+    Hashmap *map = Hashmap_create(NULL, test_strlen_is_hash);
+
+    Hashmap_set(map, &test_expand_key_1, &test_expand_value_1);
+    Hashmap_set(map, &test_expand_key_2, &test_expand_value_2);
+    Hashmap_set(map, &test_expand_key_3, &test_expand_value_3);
+    Hashmap_set(map, &test_expand_key_4, &test_expand_value_4);
+    Hashmap_set(map, &test_expand_key_5, &test_expand_value_5);
+    Hashmap_set(map, &test_expand_key_6, &test_expand_value_6);
+    Hashmap_set(map, &test_expand_key_7, &test_expand_value_7);
+    Hashmap_set(map, &test_expand_key_8, &test_expand_value_8);
+
+    Hashmap_set(map, &test_expand_key_9, &test_expand_value_9);
+    Hashmap_set(map, &test_expand_key_10, &test_expand_value_10);
+
+    /* printf("===================\n"); */
+    /* Hashmap_debug_dump(map); */
+    /* printf("===================\n"); */
+
+    bstring result = Hashmap_get(map, &test_expand_key_10);
+    assert(&test_expand_value_10 == result && "Got wrong value for key from map.");
+
+    result = Hashmap_get(map, &test_expand_key_9);
+    assert(&test_expand_value_9 == result && "Got wrong value for key from map.");
+
+    result = Hashmap_get(map, &test_expand_key_8);
+    assert(&test_expand_value_8 == result && "Got wrong value for key from map.");
+
+    result = Hashmap_get(map, &test_expand_key_7);
+    assert(&test_expand_value_7 == result && "Got wrong value for key from map.");
+
+    result = Hashmap_get(map, &test_expand_key_6);
+    assert(&test_expand_value_6 == result && "Got wrong value for key from map.");
+
+    result = Hashmap_get(map, &test_expand_key_5);
+    assert(&test_expand_value_5 == result && "Got wrong value for key from map.");
+
+    result = Hashmap_get(map, &test_expand_key_4);
+    assert(&test_expand_value_4 == result && "Got wrong value for key from map.");
+
+    result = Hashmap_get(map, &test_expand_key_3);
+    assert(&test_expand_value_3 == result && "Got wrong value for key from map.");
+
+    result = Hashmap_get(map, &test_expand_key_2);
+    assert(&test_expand_value_2 == result && "Got wrong value for key from map.");
+
+    result = Hashmap_get(map, &test_expand_key_1);
+    assert(&test_expand_value_1 == result && "Got wrong value for key from map.");
+
+    Hashmap_destroy(map);
+
+    return NULL;
+}
+
+char *test_expandBehavior_keyCollisions_2()
+{
+    Hashmap *map = Hashmap_create(NULL, NULL);
+
+    Hashmap_set(map, &test_expand_key_1, &test_expand_value_1);
+    Hashmap_set(map, &test_expand_key_2, &test_expand_value_2);
+    Hashmap_set(map, &test_expand_key_3, &test_expand_value_3);
+    Hashmap_set(map, &test_expand_key_4, &test_expand_value_4);
+    Hashmap_set(map, &test_expand_key_5, &test_expand_value_5);
+    Hashmap_set(map, &test_expand_key_6, &test_expand_value_6);
+    Hashmap_set(map, &test_expand_key_7, &test_expand_value_7);
+    Hashmap_set(map, &test_expand_key_8, &test_expand_value_8);
+
+    Hashmap_set(map, &test_expand_key_9, &test_expand_value_9);
+    Hashmap_set(map, &test_expand_key_10, &test_expand_value_10);
+
+    /* printf("===================\n"); */
+    /* Hashmap_debug_dump(map); */
+    /* printf("===================\n"); */
+
+    bstring result = Hashmap_get(map, &test_expand_key_10);
+    assert(&test_expand_value_10 == result && "Got wrong value for key from map.");
+
+    result = Hashmap_get(map, &test_expand_key_9);
+    assert(&test_expand_value_9 == result && "Got wrong value for key from map.");
+
+    result = Hashmap_get(map, &test_expand_key_8);
+    assert(&test_expand_value_8 == result && "Got wrong value for key from map.");
+
+    result = Hashmap_get(map, &test_expand_key_7);
+    assert(&test_expand_value_7 == result && "Got wrong value for key from map.");
+
+    result = Hashmap_get(map, &test_expand_key_6);
+    assert(&test_expand_value_6 == result && "Got wrong value for key from map.");
+
+    result = Hashmap_get(map, &test_expand_key_5);
+    assert(&test_expand_value_5 == result && "Got wrong value for key from map.");
+
+    result = Hashmap_get(map, &test_expand_key_4);
+    assert(&test_expand_value_4 == result && "Got wrong value for key from map.");
+
+    result = Hashmap_get(map, &test_expand_key_3);
+    assert(&test_expand_value_3 == result && "Got wrong value for key from map.");
+
+    result = Hashmap_get(map, &test_expand_key_2);
+    assert(&test_expand_value_2 == result && "Got wrong value for key from map.");
+
+    result = Hashmap_get(map, &test_expand_key_1);
+    assert(&test_expand_value_1 == result && "Got wrong value for key from map.");
+
+    Hashmap_destroy(map);
+
+    return NULL;
+}
+
 char *all_tests() {
     mu_suite_start();
 
@@ -352,6 +506,9 @@ char *all_tests() {
     mu_run_test(test_remove_keyCollisions_3);
     mu_run_test(test_remove_4);
     mu_run_test(test_contains);
+    mu_run_test(test_expandBehavior_simple);
+    mu_run_test(test_expandBehavior_keyCollisions_1);
+    mu_run_test(test_expandBehavior_keyCollisions_2);
 
     return NULL;
 }
