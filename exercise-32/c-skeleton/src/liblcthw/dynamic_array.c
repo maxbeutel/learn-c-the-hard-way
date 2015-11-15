@@ -77,7 +77,7 @@ static int DArray_canContract(DArray *array)
     return false;
 }
 
-
+// @FIXME why do i need element_size ??? it seems like its nowhere used
 DArray *DArray_create(size_t element_size, int initial_capacity)
 {
     assert(element_size > 0 && "You must provide an element size > 0.");
