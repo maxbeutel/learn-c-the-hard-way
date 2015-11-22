@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
+#include <errno.h>
 
 #include <liblcthw/bstrlib.h>
 #include <liblcthw/hashmap.h>
@@ -8,17 +9,27 @@
 
 #define UNUSED(x) (void)(x)
 
-static void fillWithRandomKeys(DArray *keys)
+static int fillWithRandomKeys(DArray *keys)
 {
     assert(keys != NULL);
 
-    // @TODO more fopen/flcose/fread error handling
+    errno = 0;
     FILE *urandfilePtr = fopen("/dev/urandom", "r");
-    assert(urandfilePtr != NULL);
+
+    if (urandfilePtr == NULL) {
+        return 1;
+    }
+
+    int rc = 0;
 
     for (int i = 0; i < keys->capacity; i++) {
         char str[10 + 1] = {0};
-        fread(str, sizeof(char), 10, urandfilePtr);
+        int bytesRead = fread(str, sizeof(char), 10, urandfilePtr);
+
+        if (bytesRead != 10) {
+            rc = 1;
+            goto end;
+        }
 
         bstring key = bfromcstr(str);
         assert(key != NULL);
@@ -26,11 +37,18 @@ static void fillWithRandomKeys(DArray *keys)
         DArray_push(keys, key);
     }
 
-    /* bsclose(urandstream); */
-    fclose(urandfilePtr);
-
     assert(keys->size > 0);
     assert(keys->size == keys->capacity);
+
+end:
+    errno = 0;
+    int closeSuccess = fclose(urandfilePtr);
+
+    if (closeSuccess != 0) {
+        return 2;
+    }
+
+    return rc;
 }
 
 static void distributeKeysOnBuckets(DArray *keys, int num_buckets, Hashmap_hash hash_func, int *statistics)
@@ -90,7 +108,12 @@ int main(void)
     DArray *keys = DArray_create(1, numKeys);
     assert(keys != NULL);
 
-    fillWithRandomKeys(keys);
+    int rc = 0;
+
+    if (fillWithRandomKeys(keys) != 0) {
+        rc = 1;
+        goto end;
+    }
 
     distributeKeysOnBuckets(keys, numBuckets, Hashmap_fnv1a_hash, statistics);
     distributeKeysOnBuckets(keys, numBuckets, Hashmap_adler32_hash, statistics + numBuckets);
@@ -98,10 +121,16 @@ int main(void)
 
     dumpStatistics(stdout, statisticsLabels, statistics, 3, numBuckets);
 
-    freeRandomKeys(keys);
-    DArray_destroy(keys);
+end:
+    if (keys != NULL) {
+        freeRandomKeys(keys);
 
-    free(statistics);
+        DArray_destroy(keys);
+    }
 
-    return 0;
+    if (statistics != NULL) {
+        free(statistics);
+    }
+
+    return rc;
 }
