@@ -12,6 +12,9 @@ OBJECTS = $(patsubst %.c,%.o,$(SOURCES))
 TEST_SRC = $(wildcard tests/*_test.c)
 TESTS = $(patsubst %.c,%,$(TEST_SRC))
 
+STATISTICS_SRC = $(wildcard statistics/*.c)
+STATISTICS = $(patsubst %.c,%,$(STATISTICS_SRC))
+
 TARGET = build/liblcthw.a
 SO_TARGET = $(patsubst %.a,%.so,$(TARGET))
 
@@ -38,6 +41,13 @@ dev: clean all tests
 tests: CFLAGS += $(SO_TARGET)
 tests: $(TESTS)
 	$(SHELL) ./tests/runtests.sh
+
+.PHONY: dev-statistics
+dev-statistics: clean all statistics
+
+.PHONY: statistics
+statistics: CFLAGS += $(SO_TARGET)
+statistics: $(STATISTICS)
 
 valgrind:
 	VALGRIND="valgrind --log-file=/tmp/valgrind-%p.log" $(MAKE)
