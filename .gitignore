@@ -66,3 +66,6 @@ tramp
 
 # cask packages
 .cask/
+
+# auto generated dependencies by clang
+.deps
