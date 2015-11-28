@@ -1,3 +1,5 @@
+### mostly stolen from http://eigenstate.org/notes/makefiles
+
 CC = clang
 SHELL = /bin/bash
 
