@@ -1,6 +1,10 @@
+#include <stdlib.h>
 #include <assert.h>
 
 #include "string_scanner.h"
+
+// debug
+#include <stdio.h>
 
 static inline void String_setup_skip_chars(size_t *skip_chars, const unsigned char *needle, ssize_t nlen)
 {
@@ -12,7 +16,7 @@ static inline void String_setup_skip_chars(size_t *skip_chars, const unsigned ch
     }
 
     for (i = 0; i < last; i++) {
-        skip_chars[needle[i]] = last -i;
+        skip_chars[needle[i]] = last - i;
     }
 }
 
@@ -20,13 +24,17 @@ static inline const unsigned char *String_base_search(
     const unsigned char *haystack,
     ssize_t hlen,
     const unsigned char *needle,
-    ssize_t nlen
+    ssize_t nlen,
+    size_t *skip_chars
 ) {
     assert(haystack != NULL);
     assert(hlen > 0);
 
     assert(needle != NULL);
     assert(nlen > 0);
+
+    size_t i = 0;
+    size_t last = nlen - 1;
 
     while (hlen > nlen) {
         for (i = last; haystack[i] == needle[i]; i--) {
@@ -47,16 +55,16 @@ int String_find(bstring in, bstring what)
     const unsigned char *found = NULL;
 
     const unsigned char *haystack = (const unsigned char *) bdata(in);
-    ssize_t hlen = blength(haystack);
+    ssize_t hlen = blength(in);
 
     const unsigned char *needle = (const unsigned char *) bdata(what);
-    ssize_t nlen = blength(needle);
+    ssize_t nlen = blength(what);
 
     size_t skip_chars[UCHAR_MAX + 1] = { 0 };
 
     String_setup_skip_chars(skip_chars, needle, nlen);
 
-    found = String_base_search(haystack, hlen, needle, nlen);
+    found = String_base_search(haystack, hlen, needle, nlen, skip_chars);
 
     return found != NULL ? found - haystack : -1;
 }

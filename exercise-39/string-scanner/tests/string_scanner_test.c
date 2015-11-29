@@ -1,4 +1,5 @@
 #include <time.h>
+#include <assert.h>
 
 #include <string_scanner.h>
 #include <bstrlib.h>
@@ -18,17 +19,17 @@ char *test_find_and_scan()
     int find_i = String_find(&IN_STR, &ALPHA);
     assert(find_i > 0 && "Failed to find 'ALPHA' in test string.");
 
-    int scan_i = StringScanner_scan(&ALPHA);
-    assert(scan_i > 0, "Failed to find 'ALPHA' with scan.");
-    assert(scan_i == find_i, "find and scan don't match");
+    int scan_i = StringScanner_scan(scan, &ALPHA);
+    assert(scan_i > 0 && "Failed to find 'ALPHA' with scan.");
+    assert(scan_i == find_i && "find and scan don't match");
 
     scan_i = StringScanner_scan(scan, &ALPHA);
-    assert(scan_i > find_i, "should find another ALPHA after the first");
+    assert(scan_i > find_i && "Should find another ALPHA after the first");
 
     scan_i = StringScanner_scan(scan, &ALPHA);
-    assert(scan_i > find_i, "should find another ALPHA after the first");
+    assert(scan_i > find_i && "Should find another ALPHA after the first");
 
-    assert(StringScanner_scan(scan, &ALPHA) == -1, "shouldn't find it");
+    assert(StringScanner_scan(scan, &ALPHA) == -1 && "Shouldn't find it");
 
     StringScanner_destroy(scan);
 
@@ -44,4 +45,4 @@ char *all_tests()
     return NULL;
 }
 
-RUN_TESTS(all_tests);
+RUN_TESTS(all_tests)

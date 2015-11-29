@@ -4,9 +4,13 @@
 #include <limits.h>
 #include <string.h>
 
+#include "bstrlib.h"
+
 typedef struct StringScanner {
     bstring in;
     const unsigned char *haystack;
+    ssize_t hlen;
+    const unsigned char *needle;
     ssize_t nlen;
     size_t skip_chars[UCHAR_MAX + 1];
 } StringScanner;
