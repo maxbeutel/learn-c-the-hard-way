@@ -45,7 +45,7 @@ char *test_setRootNodeOnly()
     return NULL;
 }
 
-char *test_addMultipleNodes()
+char *test_getSetMultipleNodes()
 {
     BSTree *map = BSTree_create(NULL);
 
@@ -58,6 +58,15 @@ char *test_addMultipleNodes()
     BSTree_set(map, &test_key_3, &test_value_3);
     assert(map->count == 3 && "Wrong count after adding value to map.");
 
+    bstring value = BSTree_get(map, &test_key_1);
+    assert(&test_value_1 == value && "Got unexpected value from map.");
+
+    value = BSTree_get(map, &test_key_2);
+    assert(&test_value_2 == value && "Got unexpected value from map.");
+
+    value = BSTree_get(map, &test_key_3);
+    assert(&test_value_3 == value && "Got unexpected value from map.");
+
     BSTree_destroy(map);
 
     return NULL;
@@ -69,7 +78,7 @@ char *all_tests()
 
     mu_run_test(test_createEmpty);
     mu_run_test(test_setRootNodeOnly);
-    mu_run_test(test_addMultipleNodes);
+    mu_run_test(test_getSetMultipleNodes);
 
     return NULL;
 }

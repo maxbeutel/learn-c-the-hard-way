@@ -70,6 +70,8 @@ static inline void BSTree_appendChild(BSTree *map, BSTreeNode *parent, void *key
             parent->left = BSTreeNode_create(parent, key, data);
         }
 
+        // @TODO go deeper
+
         return;
     }
 
@@ -77,6 +79,8 @@ static inline void BSTree_appendChild(BSTree *map, BSTreeNode *parent, void *key
     if (parent->right == NULL) {
         parent->right = BSTreeNode_create(parent, key, data);
     }
+
+    // @TODO go deeper
 }
 
 void BSTree_set(BSTree *map, void *key, void *data)
@@ -94,6 +98,25 @@ void BSTree_set(BSTree *map, void *key, void *data)
     map->count++;
 }
 
+void BSTree_findChild(BSTree *map, BSTreeNode **child, BSTreeNode *parent, void *key)
+{
+    assert(map != NULL);
+
+    if (parent == NULL) {
+        return;
+    }
+
+    int compareResult = map->compare(parent->key, key);
+
+    if (compareResult == 0) {
+        *child = parent;
+
+        return;
+    }
+
+    // @TODO go deeper
+}
+
 void *BSTree_get(BSTree *map, void *key)
 {
     assert(map != NULL);
@@ -105,16 +128,23 @@ void *BSTree_get(BSTree *map, void *key)
     // sanity check
     assert(map->root != NULL);
 
-    int rootCompareResult = map->compare(root->key, key);
+    int rootCompareResult = map->compare(map->root->key, key);
 
     if (rootCompareResult == 0) {
         return map->root->data;
     }
 
     // go left
-    if (compareResult <= 0) {
+    if (rootCompareResult <= 0) {
+        BSTreeNode *child = NULL;
+        BSTree_findChild(map, &child, map->root->left, key);
 
+        return (child == NULL ? NULL : child->data);
     }
 
     // go right
+    BSTreeNode *child = NULL;
+    BSTree_findChild(map, &child, map->root->right, key);
+
+    return (child == NULL ? NULL : child->data);
 }
