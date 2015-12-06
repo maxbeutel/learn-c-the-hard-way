@@ -68,9 +68,9 @@ static inline void BSTree_appendChild(BSTree *map, BSTreeNode *parent, void *key
     if (compareResult <= 0) {
         if (parent->left == NULL) {
             parent->left = BSTreeNode_create(parent, key, data);
+        } else {
+            BSTree_appendChild(map, parent->left, key, data);
         }
-
-        // @TODO go deeper
 
         return;
     }
@@ -78,9 +78,9 @@ static inline void BSTree_appendChild(BSTree *map, BSTreeNode *parent, void *key
     // create new child on the right
     if (parent->right == NULL) {
         parent->right = BSTreeNode_create(parent, key, data);
+    } else {
+        BSTree_appendChild(map, parent->right, key, data);
     }
-
-    // @TODO go deeper
 }
 
 void BSTree_set(BSTree *map, void *key, void *data)
@@ -114,7 +114,14 @@ void BSTree_findChild(BSTree *map, BSTreeNode **child, BSTreeNode *parent, void 
         return;
     }
 
-    // @TODO go deeper
+    // go left
+    if (compareResult <= 0) {
+        BSTree_findChild(map, child, parent->left, key);
+        return;
+    }
+
+    // go right
+    BSTree_findChild(map, child, parent->right, key);
 }
 
 void *BSTree_get(BSTree *map, void *key)
@@ -125,26 +132,14 @@ void *BSTree_get(BSTree *map, void *key)
         return NULL;
     }
 
-    // sanity check
-    assert(map->root != NULL);
-
-    int rootCompareResult = map->compare(map->root->key, key);
-
-    if (rootCompareResult == 0) {
-        return map->root->data;
-    }
-
-    // go left
-    if (rootCompareResult <= 0) {
-        BSTreeNode *child = NULL;
-        BSTree_findChild(map, &child, map->root->left, key);
-
-        return (child == NULL ? NULL : child->data);
-    }
-
-    // go right
     BSTreeNode *child = NULL;
-    BSTree_findChild(map, &child, map->root->right, key);
+    BSTree_findChild(map, &child, map->root, key);
 
-    return (child == NULL ? NULL : child->data);
+    // not found
+    // @TODO how to distinguish between not found and NULL data?!
+    if (child == NULL) {
+        return NULL;
+    }
+
+    return child->data;
 }
