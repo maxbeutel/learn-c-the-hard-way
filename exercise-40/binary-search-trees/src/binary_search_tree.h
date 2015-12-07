@@ -1,6 +1,8 @@
 #ifndef _binary_search_trees_h
 #define _binary_search_trees_h
 
+#include <stdlib.h>
+
 typedef int (*BSTree_compare)(void *a, void *b);
 
 typedef struct BSTreeNode {
@@ -13,7 +15,7 @@ typedef struct BSTreeNode {
 } BSTreeNode;
 
 typedef struct BSTree {
-    int count;
+    size_t size;
     BSTree_compare compare;
     BSTreeNode *root;
 } BSTree;

@@ -25,7 +25,7 @@ char *test_createEmpty()
     BSTree *map = BSTree_create(NULL);
 
     assert(map != NULL);
-    assert(map->count == 0);
+    assert(map->size == 0);
     assert(map->compare != NULL);
 
     BSTree_destroy(map);
@@ -38,7 +38,7 @@ char *test_setRootNodeOnly()
     BSTree *map = BSTree_create(NULL);
 
     BSTree_set(map, &test_key_1, &test_value_1);
-    assert(map->count == 1 && "Wrong count after adding value to map.");
+    assert(map->size == 1 && "Wrong count after adding value to map.");
 
     BSTree_destroy(map);
 
@@ -50,13 +50,13 @@ char *test_getSetMultipleNodes()
     BSTree *map = BSTree_create(NULL);
 
     BSTree_set(map, &test_key_1, &test_value_1);
-    assert(map->count == 1 && "Wrong count after adding value to map.");
+    assert(map->size == 1 && "Wrong count after adding value to map.");
 
     BSTree_set(map, &test_key_2, &test_value_2);
-    assert(map->count == 2 && "Wrong count after adding value to map.");
+    assert(map->size == 2 && "Wrong count after adding value to map.");
 
     BSTree_set(map, &test_key_3, &test_value_3);
-    assert(map->count == 3 && "Wrong count after adding value to map.");
+    assert(map->size == 3 && "Wrong count after adding value to map.");
 
     bstring value = BSTree_get(map, &test_key_1);
     assert(&test_value_1 == value && "Got unexpected value from map.");
