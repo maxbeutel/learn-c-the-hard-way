@@ -134,7 +134,6 @@ void BSTree_destroy(BSTree *map)
         }
     }
 
-
 error:
     if (queue != NULL) {
         Queue_destroy(queue);
@@ -197,7 +196,7 @@ void BSTree_set(BSTree *map, void *key, void *data)
     map->size++;
 }
 
-void BSTree_findChild(BSTree *map, BSTreeNode **child, BSTreeNode *parent, void *key)
+static void BSTree_findChild(BSTree *map, BSTreeNode **child, BSTreeNode *parent, void *key)
 {
     assert(map != NULL);
 
@@ -232,9 +231,9 @@ void *BSTree_get(BSTree *map, void *key)
     }
 
     BSTreeNode *child = NULL;
+
     BSTree_findChild(map, &child, map->root, key);
 
-    // not found
     // @TODO how to distinguish between not found and NULL data?!
     if (child == NULL) {
         return NULL;
