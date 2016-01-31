@@ -260,6 +260,35 @@ void *BSTree_get(BSTree *map, void *key)
     return childFound->data;
 }
 
+static void BSTree_replaceNodeInParent(BSTree *map, BSTreeNode *parent, BSTreeNode *child, void *newValue)
+{
+    assert(map != NULL);
+    assert(child != NULL);
+
+    // child is the root node
+    if (parent == NULL) {
+        map->root = newValue;
+        free(child);
+        map->size--;
+    } else {
+        // current node is on left side of parent
+        if (parent->left == child) {
+            parent->left = newValue;
+            free(child);
+            map->size--;
+
+            //printf("freeing child on left side of parent\n");
+            // current node is on right side of parent
+        } else if (parent->right == child) {
+            parent->right = newValue;
+            free(child);
+            map->size--;
+
+            //printf("freeing child on right side of parent\n");
+        }
+    }
+}
+
 static void BSTree_deleteChild(BSTree *map, BSTreeNode *child, BSTreeNode *parent, void *key)
 {
     assert(map != NULL);
@@ -285,33 +314,15 @@ static void BSTree_deleteChild(BSTree *map, BSTreeNode *child, BSTreeNode *paren
         if (child->left == NULL && child->right == NULL) {
             //printf("easy case: child doesn't have any children - ");
 
-            // current node is on left side of parent
-            if (parent->left == child) {
-                parent->left = NULL;
-                free(child);
-                map->size--;
-
-                //printf("freeing child on left side of parent\n");
-                // current node is on right side of parent
-            } else if (parent->right == child) {
-                parent->right = NULL;
-                free(child);
-                map->size--;
-
-                //printf("freeing child on right side of parent\n");
-            }
+            BSTree_replaceNodeInParent(map, parent, child, NULL);
         } else if (child->left == NULL && child->right != NULL) {
             //printf("not so easy case: child has sibling on the right.\n");
 
-            parent->right = child->right;
-            free(child);
-            map->size--;
+            BSTree_replaceNodeInParent(map, parent, child, child->right);
         } else if (child->left != NULL && child->right == NULL) {
             //printf("not so easy case: child has sibling on the left.\n");
 
-            parent->left = child->left;
-            free(child);
-            map->size--;
+            BSTree_replaceNodeInParent(map, parent, child, child->left);
         }
     }
 }
@@ -323,13 +334,6 @@ void BSTree_delete(BSTree *map, void *key)
     if (map->size == 0) {
         return;
     }
-
-    /* // special case, */
-    /* int compareResult = map->compare(root->key, key); */
-
-    /* if (compareResult == 0) { */
-
-    /* } */
 
     BSTree_deleteChild(map, map->root, NULL, key);
 }

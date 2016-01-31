@@ -96,20 +96,20 @@ char *test_getSetMultipleNodes()
     return NULL;
 }
 
-/* char *test_deleteRootNodeOnly() */
-/* { */
-/*     BSTree *map = BSTree_create(intKey_compare); */
+char *test_deleteRootNodeOnly()
+{
+    BSTree *map = BSTree_create(intKey_compare);
 
-/*     BSTree_set(map, (void *) (intptr_t) test_key_1, &test_value_1); */
-/*     assert(map->size == 1 && "Wrong count after adding value to map."); */
+    BSTree_set(map, (void *) (intptr_t) test_key_1, &test_value_1);
+    assert(map->size == 1 && "Wrong count after adding value to map.");
 
-/*     BSTree_delete(map, (void *) (intptr_t) test_key_1); */
-/*     assert(map->size == 0 && "Wrong count after deleting value from map."); */
+    BSTree_delete(map, (void *) (intptr_t) test_key_1);
+    assert(map->size == 0 && "Wrong count after deleting value from map.");
 
-/*     BSTree_destroy(map); */
+    BSTree_destroy(map);
 
-/*     return NULL; */
-/* } */
+    return NULL;
+}
 
 char *test_deleteSingleChildOfRoot()
 {
@@ -202,7 +202,7 @@ char *all_tests()
     mu_run_test(test_deleteNodeWithSingleChildLeft);
     mu_run_test(test_deleteNodeWithSingleChildRight);
 
-    /* mu_run_test(test_deleteRootNodeOnly); */
+    mu_run_test(test_deleteRootNodeOnly);
 
     return NULL;
 }
