@@ -289,6 +289,26 @@ static void BSTree_replaceNodeInParent(BSTree *map, BSTreeNode *parent, BSTreeNo
     }
 }
 
+static BSTreeNode *BSTree_findSmallestChild(BSTreeNode *parent)
+{
+    assert(parent != NULL);
+
+    BSTreeNode *smallestChild = parent;
+
+    while (smallestChild->left != NULL) {
+        smallestChild = smallestChild->left;
+    }
+
+    return smallestChild;
+}
+
+static inline void BSTree_swap(BSTreeNode *a, BSTreeNode *b)
+{
+    void *temp = NULL;
+    temp = b->key; b->key = a->key; a->key = temp;
+    temp = b->data; b->data = a->data; a->data = temp;
+}
+
 static void BSTree_deleteChild(BSTree *map, BSTreeNode *child, BSTreeNode *parent, void *key)
 {
     assert(map != NULL);
@@ -328,6 +348,15 @@ static void BSTree_deleteChild(BSTree *map, BSTreeNode *child, BSTreeNode *paren
 
             assert(child->left != NULL && "Expected child to have left AND right sibling, no left sibling found.");
             assert(child->right != NULL && "Expected child to have left AND right sibling, no right sibling found.");
+
+            BSTreeNode *successor = BSTree_findSmallestChild(child->right);
+            assert(successor != NULL && "Tried to find successor for node to be deleted, but nothing found.");
+
+            BSTree_swap(successor, child);
+
+            // brainfuck: successor is at this point now in 'child' variable,
+            // because it was swapped in place in BSTree_swap function
+            BSTree_replaceNodeInParent(map, successor->parent, successor, successor->right);
         }
     }
 }

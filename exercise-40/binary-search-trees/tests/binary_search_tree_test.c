@@ -228,7 +228,7 @@ char *all_tests()
     mu_run_test(test_replaceExistingKeyWithNewValue);
     mu_run_test(test_deleteNodeWithSingleChildLeft);
     mu_run_test(test_deleteNodeWithSingleChildRight);
-    //mu_run_test(test_deleteNodeWithSingleLeftAndSingleChildRight);
+    mu_run_test(test_deleteNodeWithSingleLeftAndSingleChildRight);
 
     mu_run_test(test_deleteRootNodeOnly);
 
