@@ -19,7 +19,10 @@ int test_key_3 = 3;
 struct tagbstring test_value_3 = bsStatic("test value 3");
 
 int test_key_4 = 4;
+struct tagbstring test_value_4 = bsStatic("test value 4");
+
 int test_key_5 = 5;
+struct tagbstring test_value_5 = bsStatic("test value 5");
 
 static int intKey_compare(void *a, void *b)
 {
@@ -189,6 +192,30 @@ char *test_deleteNodeWithSingleChildRight()
     return NULL;
 }
 
+char *test_deleteNodeWithSingleLeftAndSingleChildRight()
+{
+    BSTree *map = BSTree_create(intKey_compare);
+
+    BSTree_set(map, (void *) (intptr_t) test_key_5, &test_value_5);
+    assert(map->size == 1 && "Wrong count after adding value to map.");
+
+    BSTree_set(map, (void *) (intptr_t) test_key_3, &test_value_3);
+    assert(map->size == 2 && "Wrong count after adding value to map.");
+
+    BSTree_set(map, (void *) (intptr_t) test_key_4, &test_value_4);
+    assert(map->size == 3 && "Wrong count after adding value to map.");
+
+    BSTree_set(map, (void *) (intptr_t) test_key_2, &test_value_2);
+    assert(map->size == 4 && "Wrong count after adding value to map.");
+
+    BSTree_delete(map, (void *) (intptr_t) test_key_3);
+    assert(map->size == 3 && "Wrong count after deleting value from map.");
+
+    BSTree_destroy(map);
+
+    return NULL;
+}
+
 char *all_tests()
 {
     mu_suite_start();
@@ -201,6 +228,7 @@ char *all_tests()
     mu_run_test(test_replaceExistingKeyWithNewValue);
     mu_run_test(test_deleteNodeWithSingleChildLeft);
     mu_run_test(test_deleteNodeWithSingleChildRight);
+    //mu_run_test(test_deleteNodeWithSingleLeftAndSingleChildRight);
 
     mu_run_test(test_deleteRootNodeOnly);
 

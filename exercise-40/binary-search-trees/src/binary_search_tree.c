@@ -323,6 +323,11 @@ static void BSTree_deleteChild(BSTree *map, BSTreeNode *child, BSTreeNode *paren
             //printf("not so easy case: child has sibling on the left.\n");
 
             BSTree_replaceNodeInParent(map, parent, child, child->left);
+        } else {
+            //printf("pretty hard case: child has sibling on the left and on the right.\n");
+
+            assert(child->left != NULL && "Expected child to have left AND right sibling, no left sibling found.");
+            assert(child->right != NULL && "Expected child to have left AND right sibling, no right sibling found.");
         }
     }
 }
