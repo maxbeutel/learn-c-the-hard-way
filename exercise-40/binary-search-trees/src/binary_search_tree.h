@@ -5,6 +5,18 @@
 
 typedef int (*BSTree_compare)(void *a, void *b);
 
+typedef struct BSTreeEdge {
+    void *key;
+    void *childKey;
+    int childPosition;
+} BSTreeEdge;
+
+typedef enum {
+    BS_TREE_NODE_CHILD_POSITION_UNDEFINED = -1,
+    BS_TREE_NODE_CHILD_POSITION_LEFT = 0,
+    BS_TREE_NODE_CHILD_POSITION_RIGHT,
+} BSTreeNode_childPosition;
+
 typedef struct BSTreeNode {
     void *key;
     void *data;
@@ -20,8 +32,6 @@ typedef struct BSTree {
     BSTreeNode *root;
 } BSTree;
 
-typedef int (*BSTree_traverse_cb)(BSTreeNode *node);
-
 BSTree *BSTree_create(BSTree_compare compare);
 void BSTree_destroy(BSTree *map);
 
@@ -30,7 +40,7 @@ void *BSTree_get(BSTree *map, void *key);
 
 int BSTree_contains(BSTree *map, void *key);
 
-/* int BSTree_traverse(BSTree *map, BSTree_traverse_cb traverse_cb); */
+int BSTree_traverse(BSTree *map, BSTreeEdge *edge);
 
 void BSTree_delete(BSTree *map, void *key);
 

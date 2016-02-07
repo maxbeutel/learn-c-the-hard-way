@@ -83,11 +83,6 @@ static int default_compare(void *a, void *b)
 }
 
 /* *** Binary Search Tree Implementation *** */
-typedef enum {
-    BS_TREE_CHILD_POSITION_LEFT = 0,
-    BS_TREE_CHILD_POSITION_RIGHT,
-} BSTree_childPosition;
-
 BSTree *BSTree_create(BSTree_compare compare)
 {
     BSTree *map = calloc(1, sizeof(BSTree));
@@ -160,14 +155,14 @@ static BSTreeNode *BSTreeNode_create(BSTreeNode *parent, void *key, void *data)
     return node;
 }
 
-static void BSTree_doAppendChild(BSTree *map, BSTreeNode *parent, void *key, void *data, BSTree_childPosition childPosition)
+static void BSTree_doAppendChild(BSTree *map, BSTreeNode *parent, void *key, void *data, BSTreeNode_childPosition childPosition)
 {
     assert(map != NULL);
     assert(parent != NULL);
 
-    if (childPosition == BS_TREE_CHILD_POSITION_LEFT) {
+    if (childPosition == BS_TREE_NODE_CHILD_POSITION_LEFT) {
         parent->left = BSTreeNode_create(parent, key, data);
-    } else if (childPosition == BS_TREE_CHILD_POSITION_RIGHT) {
+    } else if (childPosition == BS_TREE_NODE_CHILD_POSITION_RIGHT) {
         parent->right = BSTreeNode_create(parent, key, data);
     }
 
@@ -186,7 +181,7 @@ static void BSTree_appendChild(BSTree *map, BSTreeNode *parent, void *key, void 
         if (parent->left == NULL) {
             /* parent->left = BSTreeNode_create(parent, key, data); */
             /* map->size++; */
-            BSTree_doAppendChild(map, parent, key, data, BS_TREE_CHILD_POSITION_LEFT);
+            BSTree_doAppendChild(map, parent, key, data, BS_TREE_NODE_CHILD_POSITION_LEFT);
         } else {
             BSTree_appendChild(map, parent->left, key, data);
         }
@@ -195,7 +190,7 @@ static void BSTree_appendChild(BSTree *map, BSTreeNode *parent, void *key, void 
         if (parent->right == NULL) {
             /* parent->right = BSTreeNode_create(parent, key, data); */
             /* map->size++; */
-            BSTree_doAppendChild(map, parent, key, data, BS_TREE_CHILD_POSITION_RIGHT);
+            BSTree_doAppendChild(map, parent, key, data, BS_TREE_NODE_CHILD_POSITION_RIGHT);
         } else {
             BSTree_appendChild(map, parent->right, key, data);
         }
@@ -275,6 +270,20 @@ int BSTree_contains(BSTree *map, void *key)
     }
 
     return 1;
+}
+
+int BSTree_traverse(BSTree *map, BSTreeEdge *edge)
+{
+    assert(map != NULL);
+    assert(edge != NULL);
+
+    if (map->size == 0) {
+        return 0;
+    }
+
+    edge->key = map->root->key;
+
+    return 0;
 }
 
 static void BSTree_replaceNodeInParent(BSTree *map, BSTreeNode *parent, BSTreeNode *child, void *newValue)

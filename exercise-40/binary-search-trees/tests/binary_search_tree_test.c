@@ -264,6 +264,49 @@ char *test_containsMultipleNodesInTree()
     return NULL;
 }
 
+char *test_traverseEmptyTree()
+{
+    BSTree *map = BSTree_create(NULL);
+
+    BSTreeEdge edge = {
+        .key = NULL,
+        .childKey = NULL,
+        .childPosition = BS_TREE_NODE_CHILD_POSITION_UNDEFINED,
+    };
+
+    assert(BSTree_traverse(map, &edge) == 0 && "Expected to end traversal after node.");
+    assert(edge.key == NULL && "Expected edge key to be populated.");
+    assert(edge.childKey == NULL && "Expected edge without descendants to not have child set.");
+    assert(edge.childPosition == BS_TREE_NODE_CHILD_POSITION_UNDEFINED && "Expected edge without descendants to not have child position set.");
+
+    BSTree_destroy(map);
+
+    return NULL;
+}
+
+char *test_traverseRootNodeOnly()
+{
+    BSTree *map = BSTree_create(NULL);
+
+    BSTree_set(map, (void *) (intptr_t) test_key_1, &test_value_1);
+    assert(map->size == 1 && "Wrong count after adding value to map.");
+
+    BSTreeEdge edge = {
+        .key = NULL,
+        .childKey = NULL,
+        .childPosition = BS_TREE_NODE_CHILD_POSITION_UNDEFINED,
+    };
+
+    assert(BSTree_traverse(map, &edge) == 0 && "Expected to end traversal after node.");
+    assert((int) (intptr_t) edge.key == test_key_1 && "Expected edge key to be populated.");
+    assert(edge.childKey == NULL && "Expected edge without descendants to not have child set.");
+    assert(edge.childPosition == BS_TREE_NODE_CHILD_POSITION_UNDEFINED && "Expected edge without descendants to not have child position set.");
+
+    BSTree_destroy(map);
+
+    return NULL;
+}
+
 char *all_tests()
 {
     mu_suite_start();
@@ -281,6 +324,8 @@ char *all_tests()
     mu_run_test(test_containsEmptyTree);
     mu_run_test(test_containsRootNode);
     mu_run_test(test_containsMultipleNodesInTree);
+    mu_run_test(test_traverseEmptyTree);
+    mu_run_test(test_traverseRootNodeOnly);
 
     return NULL;
 }
