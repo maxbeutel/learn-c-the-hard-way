@@ -216,6 +216,54 @@ char *test_deleteNodeWithSingleLeftAndSingleChildRight()
     return NULL;
 }
 
+char *test_containsEmptyTree()
+{
+    BSTree *map = BSTree_create(intKey_compare);
+
+    assert(BSTree_contains(map, (void *) (intptr_t) test_key_1) == 0 && "Key should not be found in empty map.");
+
+    BSTree_destroy(map);
+
+    return NULL;
+}
+
+char *test_containsRootNode()
+{
+    BSTree *map = BSTree_create(intKey_compare);
+
+    BSTree_set(map, (void *) (intptr_t) test_key_1, &test_value_1);
+    assert(map->size == 1 && "Wrong count after adding value to map.");
+
+    assert(BSTree_contains(map, (void *) (intptr_t) test_key_1) == 1 && "Key should be contained in map.");
+
+    BSTree_destroy(map);
+
+    return NULL;
+}
+
+char *test_containsMultipleNodesInTree()
+{
+    BSTree *map = BSTree_create(intKey_compare);
+
+    BSTree_set(map, (void *) (intptr_t) test_key_5, &test_value_5);
+    assert(map->size == 1 && "Wrong count after adding value to map.");
+
+    BSTree_set(map, (void *) (intptr_t) test_key_3, &test_value_3);
+    assert(map->size == 2 && "Wrong count after adding value to map.");
+
+    BSTree_set(map, (void *) (intptr_t) test_key_4, &test_value_4);
+    assert(map->size == 3 && "Wrong count after adding value to map.");
+
+    BSTree_set(map, (void *) (intptr_t) test_key_2, &test_value_2);
+    assert(map->size == 4 && "Wrong count after adding value to map.");
+
+    assert(BSTree_contains(map, (void *) (intptr_t) test_key_2) == 1 && "Key should be found in map.");
+
+    BSTree_destroy(map);
+
+    return NULL;
+}
+
 char *all_tests()
 {
     mu_suite_start();
@@ -229,8 +277,10 @@ char *all_tests()
     mu_run_test(test_deleteNodeWithSingleChildLeft);
     mu_run_test(test_deleteNodeWithSingleChildRight);
     mu_run_test(test_deleteNodeWithSingleLeftAndSingleChildRight);
-
     mu_run_test(test_deleteRootNodeOnly);
+    mu_run_test(test_containsEmptyTree);
+    mu_run_test(test_containsRootNode);
+    mu_run_test(test_containsMultipleNodesInTree);
 
     return NULL;
 }

@@ -226,7 +226,6 @@ static void BSTree_findChild(BSTree *map, BSTreeNode **childFound, BSTreeNode *c
 
     int compareResult = map->compare(child->key, key);
 
-
     // go left
     if (compareResult < 0) {
         if (child->left) {
@@ -258,6 +257,24 @@ void *BSTree_get(BSTree *map, void *key)
     }
 
     return childFound->data;
+}
+
+int BSTree_contains(BSTree *map, void *key)
+{
+    assert(map != NULL);
+
+    if (map->size == 0) {
+        return 0;
+    }
+
+    BSTreeNode *childFound = NULL;
+    BSTree_findChild(map, &childFound, map->root, key);
+
+    if (childFound == NULL) {
+        return 0;
+    }
+
+    return 1;
 }
 
 static void BSTree_replaceNodeInParent(BSTree *map, BSTreeNode *parent, BSTreeNode *child, void *newValue)
