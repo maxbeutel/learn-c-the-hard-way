@@ -2,7 +2,8 @@
 #include <assert.h>
 
 // debug
-//#include <stdio.h>
+/* #include <stdio.h> */
+/* #include <stdint.h> */
 
 #include "binary_search_tree.h"
 #include "bstrlib.h"
@@ -270,20 +271,6 @@ int BSTree_contains(BSTree *map, void *key)
     }
 
     return 1;
-}
-
-int BSTree_traverse(BSTree *map, BSTreeEdge *edge)
-{
-    assert(map != NULL);
-    assert(edge != NULL);
-
-    if (map->size == 0) {
-        return 0;
-    }
-
-    edge->key = map->root->key;
-
-    return 0;
 }
 
 static void BSTree_replaceNodeInParent(BSTree *map, BSTreeNode *parent, BSTreeNode *child, void *newValue)

@@ -40,8 +40,6 @@ void *BSTree_get(BSTree *map, void *key);
 
 int BSTree_contains(BSTree *map, void *key);
 
-int BSTree_traverse(BSTree *map, BSTreeEdge *edge);
-
 void BSTree_delete(BSTree *map, void *key);
 
 #endif
