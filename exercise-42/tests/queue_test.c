@@ -11,7 +11,7 @@ char *tests[] = {"test1 data", "test2 data", "test3 data"};
 
 char *test_create()
 {
-    Queue *queue = Queue_create();
+    Queue *queue = Queue_create(1);
     assert(queue != NULL && "Pointer to queue was not created successfully.");
 
     Queue_destroy(queue);
@@ -21,7 +21,7 @@ char *test_create()
 
 char *test_sendReceive()
 {
-    Queue *queue = Queue_create();
+    Queue *queue = Queue_create(NUM_TESTS);
 
     // send
     for (int i = 0; i < NUM_TESTS; i++) {
@@ -29,7 +29,7 @@ char *test_sendReceive()
         assert(Queue_peek(queue) == tests[0] && "Expected first added element to be peekable.");
     }
 
-    assert(Queue_count(queue) == NUM_TESTS && "Wrong queue count after sending items.");
+    assert(queue->size == NUM_TESTS && "Wrong queue count after sending items.");
 
     /* QUEUE_FOREACH(queue, cur) { */
     /*     printf("VAL: %s\n", (char *) cur->value); */
@@ -41,7 +41,7 @@ char *test_sendReceive()
         assert(val == tests[i] && "Wrong element on receive.");
     }
 
-    assert(Queue_count(queue) == 0 && "Wrong queue count after receiving items.");
+    assert(queue->size == 0 && "Wrong queue count after receiving items.");
 
     Queue_destroy(queue);
 

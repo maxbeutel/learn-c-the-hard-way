@@ -7,40 +7,71 @@
 
 #include "queue.h"
 
-Queue *Queue_create()
+Queue *Queue_create(int capacity)
 {
-    return NULL;
+    assert(capacity > 0);
+
+    Queue *queue = calloc(1, sizeof(Queue));
+    assert(queue != NULL);
+
+    queue->capacity = capacity;
+    queue->size = 0;
+    queue->front_element_index = -1;
+
+    queue->elements = calloc(capacity, sizeof(void *));
+    assert(queue->elements != NULL);
+
+    return queue;
 }
 
 void Queue_destroy(Queue *queue)
 {
-    UNUSED(queue);
+    if (queue != NULL) {
+        free(queue->elements);
+    }
+
+    free(queue);
 }
 
 
-void Queue_send(Queue *queue, void *value)
+void Queue_send(Queue *queue, void *element)
 {
-    UNUSED(queue);
-    UNUSED(value);
+    assert(queue != NULL);
+    assert(element != NULL);
+    assert(queue->size < queue->capacity);
+
+    queue->elements[queue->size] = element;
+
+    if (queue->size == 0) {
+        queue->front_element_index = queue->size;
+    }
+
+    queue->size++;
 }
 
 void *Queue_peek(Queue *queue)
 {
-    UNUSED(queue);
+    assert(queue != NULL);
 
-    return NULL;
+    if (queue->size == 0) {
+        return NULL;
+    }
+
+    return queue->elements[queue->front_element_index];
 }
 
 void *Queue_receive(Queue *queue)
 {
-    UNUSED(queue);
+    assert(queue != NULL);
 
-    return NULL;
-}
+    if (queue->size == 0) {
+        return 0;
+    }
 
-int Queue_count(Queue *queue)
-{
-    UNUSED(queue);
+    void *element = queue->elements[queue->front_element_index];
+    queue->front_element_index++;
 
-    return -1;
+    queue->size--;
+
+    return element;
 }
