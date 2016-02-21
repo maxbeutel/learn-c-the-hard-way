@@ -6,8 +6,9 @@
 
 #include "minunit.h"
 
-char *tests[] = {"test1 data", "test2 data", "test3 data"};
-#define NUM_TESTS 3
+#define TEST_ELEMENT_1 "test1 data"
+#define TEST_ELEMENT_2 "test2 data"
+#define TEST_ELEMENT_3 "test3 data"
 
 char *test_create()
 {
@@ -21,27 +22,36 @@ char *test_create()
 
 char *test_sendReceive()
 {
-    Queue *queue = Queue_create(NUM_TESTS);
-
-    // send
-    for (int i = 0; i < NUM_TESTS; i++) {
-        Queue_send(queue, tests[i]);
-        assert(Queue_peek(queue) == tests[0] && "Expected first added element to be peekable.");
-    }
-
-    assert(queue->size == NUM_TESTS && "Wrong queue count after sending items.");
-
-    /* QUEUE_FOREACH(queue, cur) { */
-    /*     printf("VAL: %s\n", (char *) cur->value); */
-    /* } */
+    Queue *queue = Queue_create(3);
 
     // receive
-    for (int i = 0; i < NUM_TESTS; i++) {
-        char *val = Queue_receive(queue);
-        assert(val == tests[i] && "Wrong element on receive.");
-    }
+    Queue_send(queue, TEST_ELEMENT_1);
+    assert(Queue_peek(queue) == TEST_ELEMENT_1 && "Expected first added element to be returned on peek.");
+    assert(queue->size == 1 && "Wrong queue count after sending element.");
 
-    assert(queue->size == 0 && "Wrong queue count after receiving items.");
+    Queue_send(queue, TEST_ELEMENT_2);
+    assert(Queue_peek(queue) == TEST_ELEMENT_1 && "Expected first added element to be returned on peek.");
+    assert(queue->size == 2 && "Wrong queue count after sending element.");
+
+    Queue_send(queue, TEST_ELEMENT_3);
+    assert(Queue_peek(queue) == TEST_ELEMENT_1 && "Expected first added element to be returned on peek.");
+    assert(queue->size == 3 && "Wrong queue count after sending element.");
+
+    // receive
+    char *element = Queue_receive(queue);
+    assert(element == TEST_ELEMENT_1 && "Wrong element on receive.");
+    assert(queue->size == 2 && "Wront queue count after receiving element.");
+    assert(Queue_peek(queue) == TEST_ELEMENT_2 && "Expected next element to be returned on peek.");
+
+    element = Queue_receive(queue);
+    assert(element == TEST_ELEMENT_2 && "Wrong element on receive.");
+    assert(queue->size == 1 && "Wront queue count after receiving element.");
+    assert(Queue_peek(queue) == TEST_ELEMENT_3 && "Expected next element to be returned on peek.");
+
+    element = Queue_receive(queue);
+    assert(element == TEST_ELEMENT_3 && "Wrong element on receive.");
+    assert(queue->size == 0 && "Wront queue count after receiving element.");
+    assert(Queue_peek(queue) == NULL && "Expected no more elements to be returned on peek.");
 
     Queue_destroy(queue);
 
