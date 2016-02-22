@@ -25,7 +25,7 @@ char *test_sendReceive()
 {
     Queue *queue = Queue_create(3);
 
-    // receive
+    // send
     Queue_send(queue, TEST_ELEMENT_1);
     assert(Queue_peek(queue) == TEST_ELEMENT_1 && "Expected first added element to be returned on peek.");
     assert(queue->size == 1 && "Wrong queue count after sending element.");
