@@ -75,7 +75,7 @@ void *Queue_receive(Queue *queue)
     assert(queue != NULL);
 
     if (queue->size == 0) {
-        return 0;
+        return NULL;
     }
 
     void *element = queue->elements[queue->frontElementIndex];
