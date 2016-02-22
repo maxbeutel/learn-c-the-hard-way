@@ -4,7 +4,8 @@
 typedef struct Queue {
     int capacity;
     int size;
-    int front_element_index;
+    int frontElementIndex;
+    int nextFreeIndex;
     void **elements;
 } Queue;
 

@@ -9,6 +9,7 @@
 #define TEST_ELEMENT_1 "test1 data"
 #define TEST_ELEMENT_2 "test2 data"
 #define TEST_ELEMENT_3 "test3 data"
+#define TEST_ELEMENT_4 "test4 data"
 
 char *test_create()
 {
@@ -58,12 +59,33 @@ char *test_sendReceive()
     return NULL;
 }
 
+char *test_sendOverwritesExistingElementWhenFull()
+{
+    Queue *queue = Queue_create(3);
+
+    Queue_send(queue, TEST_ELEMENT_1);
+    Queue_send(queue, TEST_ELEMENT_2);
+    Queue_send(queue, TEST_ELEMENT_3);
+
+    // at this point queue is full
+    assert(Queue_peek(queue) == TEST_ELEMENT_1 && "Expected first added element to be returned on peek.");
+
+    // now send one more which overwrites the first element that was previously added
+    Queue_send(queue, TEST_ELEMENT_4);
+    assert(Queue_peek(queue) == TEST_ELEMENT_4 && "Expected first added element to be overwritten by most recent added element.");
+
+    Queue_destroy(queue);
+
+    return NULL;
+}
+
 char *all_tests()
 {
     mu_suite_start();
 
     mu_run_test(test_create);
     mu_run_test(test_sendReceive);
+    mu_run_test(test_sendOverwritesExistingElementWhenFull);
 
     return NULL;
 }

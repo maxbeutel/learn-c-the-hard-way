@@ -16,7 +16,8 @@ Queue *Queue_create(int capacity)
 
     queue->capacity = capacity;
     queue->size = 0;
-    queue->front_element_index = -1;
+    queue->nextFreeIndex = 0;
+    queue->frontElementIndex = -1;
 
     queue->elements = calloc(capacity, sizeof(void *));
     assert(queue->elements != NULL);
@@ -38,15 +39,24 @@ void Queue_send(Queue *queue, void *element)
 {
     assert(queue != NULL);
     assert(element != NULL);
-    assert(queue->size < queue->capacity);
 
-    queue->elements[queue->size] = element;
+    assert(queue->nextFreeIndex >= 0);
+    assert(queue->nextFreeIndex < queue->capacity);
 
-    if (queue->size == 0) {
-        queue->front_element_index = queue->size;
+    queue->elements[queue->nextFreeIndex] = element;
+    queue->size++;
+
+    // we now have a first entry to which we can point
+    if (queue->size == 1) {
+        queue->frontElementIndex = 0;
     }
 
-    queue->size++;
+    // queue is full, next send call will start overwriting from beginning
+    if (queue->size >= queue->capacity) {
+        queue->nextFreeIndex = 0;
+    } else {
+        queue->nextFreeIndex++;
+    }
 }
 
 void *Queue_peek(Queue *queue)
@@ -57,7 +67,7 @@ void *Queue_peek(Queue *queue)
         return NULL;
     }
 
-    return queue->elements[queue->front_element_index];
+    return queue->elements[queue->frontElementIndex];
 }
 
 void *Queue_receive(Queue *queue)
@@ -68,8 +78,8 @@ void *Queue_receive(Queue *queue)
         return 0;
     }
 
-    void *element = queue->elements[queue->front_element_index];
-    queue->front_element_index++;
+    void *element = queue->elements[queue->frontElementIndex];
+    queue->frontElementIndex++;
 
     queue->size--;
 
