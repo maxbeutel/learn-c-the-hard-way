@@ -83,5 +83,9 @@ void *Queue_receive(Queue *queue)
 
     queue->size--;
 
+    if (queue->size == 0) {
+        queue->frontElementIndex = -1;
+    }
+
     return element;
 }
