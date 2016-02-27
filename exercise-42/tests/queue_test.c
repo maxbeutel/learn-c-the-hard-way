@@ -10,6 +10,9 @@
 #define TEST_ELEMENT_2 "test2 data"
 #define TEST_ELEMENT_3 "test3 data"
 #define TEST_ELEMENT_4 "test4 data"
+#define TEST_ELEMENT_5 "test5 data"
+#define TEST_ELEMENT_6 "test6 data"
+#define TEST_ELEMENT_7 "test7 data"
 
 char *test_create()
 {
@@ -74,6 +77,36 @@ char *test_sendOverwritesExistingElementWhenFull()
     Queue_send(queue, TEST_ELEMENT_4);
     assert(Queue_peek(queue) == TEST_ELEMENT_4 && "Expected first added element to be overwritten by most recent added element.");
 
+    assert(queue->size == 3 && "Expected queue size to remain constant after adding element to full queue.");
+
+    Queue_destroy(queue);
+
+    return NULL;
+}
+
+char *test_receiveOverwritingValueFromQueue()
+{
+    Queue *queue = Queue_create(3);
+
+    Queue_send(queue, TEST_ELEMENT_1);
+    Queue_send(queue, TEST_ELEMENT_2);
+    Queue_send(queue, TEST_ELEMENT_3);
+
+    Queue_send(queue, TEST_ELEMENT_4);
+    Queue_send(queue, TEST_ELEMENT_5);
+    Queue_send(queue, TEST_ELEMENT_6);
+
+    Queue_send(queue, TEST_ELEMENT_7);
+
+    char *element = Queue_receive(queue);
+    assert(element == TEST_ELEMENT_7 && "Wrong element on receive.");
+
+    element = Queue_receive(queue);
+    assert(element == TEST_ELEMENT_5 && "Wrong element on receive.");
+
+    element = Queue_receive(queue);
+    assert(element == TEST_ELEMENT_6 && "Wrong element on receive.");
+
     Queue_destroy(queue);
 
     return NULL;
@@ -86,6 +119,7 @@ char *all_tests()
     mu_run_test(test_create);
     mu_run_test(test_sendReceive);
     mu_run_test(test_sendOverwritesExistingElementWhenFull);
+    mu_run_test(test_receiveOverwritingValueFromQueue);
 
     return NULL;
 }

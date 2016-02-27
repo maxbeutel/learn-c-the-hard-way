@@ -46,16 +46,22 @@ void Queue_send(Queue *queue, void *element)
     queue->elements[queue->nextFreeIndex] = element;
     queue->size++;
 
+    // a bit hacky, if the queue is full and we start overwriting,
+    // queue size must remain constant
+    if (queue->size > queue->capacity) {
+        queue->size = queue->capacity;
+    }
+
     // we now have a first entry to which we can point
     if (queue->size == 1) {
         queue->frontElementIndex = 0;
     }
 
+    queue->nextFreeIndex++;
+
     // queue is full, next send call will start overwriting from beginning
-    if (queue->size >= queue->capacity) {
+    if (queue->size >= queue->capacity && queue->nextFreeIndex >= queue->capacity) {
         queue->nextFreeIndex = 0;
-    } else {
-        queue->nextFreeIndex++;
     }
 }
 
