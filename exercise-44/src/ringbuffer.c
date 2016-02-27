@@ -47,7 +47,7 @@ int Ringbuffer_read(Ringbuffer *buffer, char *target, int amount)
     }
 
     void *result = memcpy(target, Ringbuffer_starts_at(buffer), amount);
-    assert(result != NULL, "Failed to write buffer into data.");
+    assert(result != NULL && "Failed to write buffer into data.");
 
     Ringbuffer_commit_read(buffer, amount);
 
@@ -81,15 +81,15 @@ int Ringbuffer_write(Ringbuffer *buffer, char *data, int length)
     }
 
     void *result = memcpy(Ringbuffer_ends_at(buffer), data, length);
-    assert(result != NULL, "Failed to write data into buffer.");
+    assert(result != NULL && "Failed to write data into buffer.");
 
     Ringbuffer_commit_write(buffer, length);
 
     return length;
 }
 
-char *Ringbuffer_gets(Ringbuffer *buffer, int amount)
-{
-    // @TODO implement function
-    return NULL;
-}
+/* char *Ringbuffer_gets(Ringbuffer *buffer, int amount) */
+/* { */
+/*     // @TODO implement function */
+/*     return NULL; */
+/* } */

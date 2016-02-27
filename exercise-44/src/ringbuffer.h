@@ -20,8 +20,36 @@ int Ringbuffer_full(Ringbuffer *buffer);
 int Ringbuffer_available_data(Ringbuffer *buffer);
 int Ringbuffer_available_space(Ringbuffer *buffer);
 
-char *Ringbuffer_gets(Ringbuffer *buffer, int amount);
+/* char *Ringbuffer_gets(Ringbuffer *buffer, int amount); */
 
-// @TODO add macros
+#define Ringbuffer_available_data(B) (\
+  ((B)->end + 1) % (B)->length - (B)->start - 1)
+
+#define Ringbuffer_available_space(B) (\
+  (B)->length - (B)->end - 1)
+
+#define Ringbuffer_full(B) (Ringbuffer_available_data((B))\
+  - (B)->length == 0)
+
+#define Ringbuffer_empty(B) (\
+  Ringbuffer_available_data((B)) == 0)
+
+#define Ringbuffer_puts(B, D) Ringbuffer_write(\
+  (B), bdata((D)), blength((D)))
+
+/* #define Ringbuffer_get_all(B) Ringbuffer_gets(\ */
+/*   (B), Ringbuffer_available_data((B))) */
+
+#define Ringbuffer_starts_at(B) (\
+  (B)->buffer + (B)->start)
+
+#define Ringbuffer_ends_at(B) (\
+  (B)->buffer + (B)->end)
+
+#define Ringbuffer_commit_read(B, A) (\
+  (B)->start = ((B)->start + (A)) % (B)->length)
+
+#define Ringbuffer_commit_write(B, A) (\
+  (B)->end = ((B)->end + (A)) % (B)->length)
 
 #endif
