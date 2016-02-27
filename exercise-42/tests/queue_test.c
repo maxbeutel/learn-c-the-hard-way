@@ -62,6 +62,29 @@ char *test_sendReceive()
     return NULL;
 }
 
+char *test_sendReceive_singleElementQueue()
+{
+    Queue *queue = Queue_create(1);
+
+    Queue_send(queue, TEST_ELEMENT_1);
+
+    char *element = Queue_receive(queue);
+    assert(element == TEST_ELEMENT_1 && "Wrong element on receive.");
+    assert(queue->size == 0 && "Wront queue count after receiving element.");
+    assert(Queue_peek(queue) == NULL && "Expected no more elements to be returned on peek.");
+
+    Queue_send(queue, TEST_ELEMENT_2);
+
+    element = Queue_receive(queue);
+    assert(element == TEST_ELEMENT_2 && "Wrong element on receive.");
+    assert(queue->size == 0 && "Wront queue count after receiving element.");
+    assert(Queue_peek(queue) == NULL && "Expected no more elements to be returned on peek.");
+
+    Queue_destroy(queue);
+
+    return NULL;
+}
+
 char *test_sendOverwritesExistingElementWhenFull()
 {
     Queue *queue = Queue_create(3);
@@ -118,6 +141,7 @@ char *all_tests()
 
     mu_run_test(test_create);
     mu_run_test(test_sendReceive);
+    mu_run_test(test_sendReceive_singleElementQueue);
     mu_run_test(test_sendOverwritesExistingElementWhenFull);
     mu_run_test(test_receiveOverwritingValueFromQueue);
 
