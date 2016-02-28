@@ -14,6 +14,7 @@ Ringbuffer *Ringbuffer_create(int length)
     buffer->length = length + 1;
     buffer->start = 0;
     buffer->end = 0;
+
     buffer->buffer = calloc(buffer->length, 1); // @FIXME should "1" be "sizeof(char)" ???
     assert(buffer->buffer != NULL);
 
